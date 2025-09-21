@@ -1,0 +1,128 @@
+{
+  "entry_307": {
+    "player_info": {
+      "first_name": "Matt",
+      "last_name": "Nass",
+      "full_name": "Matt Nass"
+    },
+    "events": {
+      "event_9": {
+        "event_number": 9,
+        "date": "2025-02-21",
+        "format": "Standard",
+        "deck": "Domain Overlords",
+        "notes": null,
+        "event_code": "DFT"
+      },
+      "event_12": {
+        "event_number": 12,
+        "date": "2025-03-15",
+        "format": "Limited",
+        "deck": "Draft",
+        "notes": "Great performance",
+        "event_code": "GPT"
+      }
+    },
+    "stats": {
+      "events": 2,
+      "day2s": 2,
+      "in_contentions": 1,
+      "top8s": 1,
+      "overall_wins": 23,
+      "overall_losses": 9,
+      "overall_draws": 0,
+      "overall_record": "23-9-0",
+      "overall_win_pct": 71.88,
+      "limited_wins": 9,
+      "limited_losses": 3,
+      "limited_draws": 0,
+      "limited_record": "9-3-0",
+      "limited_win_pct": 75.0,
+      "constructed_wins": 14,
+      "constructed_losses": 6,
+      "constructed_draws": 0,
+      "constructed_record": "14-6-0",
+      "constructed_win_pct": 70.0,
+      "day1_wins": 13,
+      "day1_losses": 3,
+      "day1_draws": 0,
+      "day1_win_pct": 81.25,
+      "day2_wins": 7,
+      "day2_losses": 6,
+      "day2_draws": 0,
+      "day2_win_pct": 53.85,
+      "day3_wins": 3,
+      "day3_losses": 0,
+      "day3_draws": 0,
+      "day3_win_pct": 100.0,
+      "top8_record": "3-0-0",
+      "drafts": 4,
+      "winning_drafts": 3,
+      "losing_drafts": 1,
+      "winning_drafts_pct": 75.0,
+      "trophy_drafts": 2,
+      "longest_win_streak": null,
+      "5streaks": 1,
+      "longest_loss_streak": null
+    }
+  },
+  "entry_308": {
+    "player_info": {
+      "first_name": "Reid",
+      "last_name": "Duke",
+      "full_name": "Reid Duke"
+    },
+    "events": {
+      "event_5": {
+        "event_number": 5,
+        "date": "2025-01-10",
+        "format": "Modern",
+        "deck": "Izzet Phoenix",
+        "notes": "Strong showing",
+        "event_code": "MCQ"
+      }
+    },
+    "stats": {
+      "events": 1,
+      "day2s": 1,
+      "in_contentions": 0,
+      "top8s": 0,
+      "overall_wins": 12,
+      "overall_losses": 4,
+      "overall_draws": 1,
+      "overall_record": "12-4-1",
+      "overall_win_pct": 70.59,
+      "limited_wins": 0,
+      "limited_losses": 0,
+      "limited_draws": 0,
+      "limited_record": "0-0-0",
+      "limited_win_pct": 0,
+      "constructed_wins": 12,
+      "constructed_losses": 4,
+      "constructed_draws": 1,
+      "constructed_record": "12-4-1",
+      "constructed_win_pct": 70.59,
+      "day1_wins": 8,
+      "day1_losses": 1,
+      "day1_draws": 0,
+      "day1_win_pct": 88.89,
+      "day2_wins": 4,
+      "day2_losses": 3,
+      "day2_draws": 1,
+      "day2_win_pct": 50.0,
+      "day3_wins": 0,
+      "day3_losses": 0,
+      "day3_draws": 0,
+      "day3_win_pct": 0,
+      "top8_record": "0-0-0",
+      "drafts": 0,
+      "winning_drafts": 0,
+      "losing_drafts": 0,
+      "winning_drafts_pct": 0,
+      "trophy_drafts": 0,
+      "longest_win_streak": 5,
+      "5streaks": 1,
+      "longest_loss_streak": 2
+    }
+  }
+}
