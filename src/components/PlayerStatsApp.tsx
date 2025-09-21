@@ -2,34 +2,15 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search } from 'lucide-react';
+import playerDataJson from '../data/data.json'; // Import the JSON
 
 const PlayerStatsApp = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [playerData, setPlayerData] = useState<any>({});
-  const [loading, setLoading] = useState(true);
+  const [playerData] = useState(playerDataJson); // Use imported data directly
+  const [loading, setLoading] = useState(false); // No loading needed
   const [error, setError] = useState<string | null>(null);
-
-  // Load data from JSON file
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await fetch(`${process.env.NODE_ENV === 'production' ? '/player-stats-dashboard' : ''}/data/data.json`);
-        if (!response.ok) {
-          throw new Error('Failed to load data');
-        }
-        const data = await response.json();
-        setPlayerData(data);
-        setLoading(false);
-      } catch (err: any) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
 
   // Extract all players for autocomplete
   const players = useMemo(() => {
