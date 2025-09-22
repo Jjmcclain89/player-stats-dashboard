@@ -43,23 +43,23 @@ const PlayerStatsApp = () => {
 
     const StatRow = ({ label, value }: { label: string; value: any }) => (
         <tr className='hover:bg-gray-50'>
-            <td className='px-2 py-2 border-b text-left'>{label}</td>
-            <td className='px-2 py-2 border-b text-right'>{value}</td>
+            <td className='px-2 py-2 border-b text-left force-black-text'>{label}</td>
+            <td className='px-2 py-2 border-b text-right force-black-text'>{value}</td>
         </tr>
     );
 
     const EventRow = ({ event }: { event: any }) => (
         <tr className='hover:bg-gray-50'>
-            <td className='px-1 py-1 border-b text-center text-xs'>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
                 {event.event_number}
             </td>
-            <td className='px-1 py-1 border-b text-center text-xs'>{event.date}</td>
-            <td className='px-1 py-1 border-b text-center text-xs'>{event.format}</td>
-            <td className='px-1 py-1 border-b text-center text-xs'>{event.deck}</td>
-            <td className='px-1 py-1 border-b text-center text-xs'>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.date}</td>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.format}</td>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.deck}</td>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
                 {event.event_code}
             </td>
-            <td className='px-1 py-1 border-b text-center text-xs'>
+            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
                 {event.notes || '-'}
             </td>
         </tr>
@@ -67,8 +67,15 @@ const PlayerStatsApp = () => {
 
     return (
         <div className='min-h-screen bg-gray-50 p-6'>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    .force-black-text {
+                        color: #000000 !important;
+                    }
+                `
+            }} />
             <div className='max-w-7xl mx-auto'>
-                <h1 className='text-3xl font-bold text-gray-900 mb-8'>
+                <h1 className='text-3xl font-bold mb-8 force-black-text'>
                     Player Stats Dashboard
                 </h1>
 
@@ -83,7 +90,7 @@ const PlayerStatsApp = () => {
                                 onChange={handleInputChange}
                                 onFocus={() => setShowDropdown(true)}
                                 placeholder='Search for a player...'
-                                className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent force-black-text'
                             />
                         </div>
 
@@ -96,7 +103,7 @@ const PlayerStatsApp = () => {
                                         onClick={() =>
                                             handlePlayerSelect(player)
                                         }
-                                        className='px-4 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0'
+                                        className='px-4 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 force-black-text'
                                     >
                                         {player.fullName}
                                     </div>
@@ -111,7 +118,7 @@ const PlayerStatsApp = () => {
                     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
                         {/* Stats Table */}
                         <div className='bg-white rounded-lg shadow-md p-6'>
-                            <h2 className='text-xl font-bold text-gray-900 mb-6'>
+                            <h2 className='text-xl font-bold mb-6 force-black-text'>
                                 {selectedPlayer.data.player_info.full_name} -
                                 Overall Statistics
                             </h2>
@@ -243,7 +250,7 @@ const PlayerStatsApp = () => {
 
                         {/* Events Table */}
                         <div className='bg-white rounded-lg shadow-md p-6'>
-                            <h3 className='text-xl font-bold text-gray-900 mb-6'>
+                            <h3 className='text-xl font-bold mb-6 force-black-text'>
                                 Events History
                             </h3>
 
@@ -251,22 +258,22 @@ const PlayerStatsApp = () => {
                                 <table className='w-full border-collapse border border-gray-200'>
                                     <thead className='sticky top-0 bg-white'>
                                         <tr className='bg-gray-100'>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Event #
                                             </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Date
                                             </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Format
                                             </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Deck
                                             </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Event Code
                                             </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs'>
+                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
                                                 Notes
                                             </th>
                                         </tr>

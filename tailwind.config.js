@@ -15,4 +15,5 @@ module.exports = {
     },
   },
   plugins: [],
+  darkMode: false, // This completely disables dark mode
 }
