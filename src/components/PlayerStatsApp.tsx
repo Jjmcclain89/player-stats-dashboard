@@ -8,13 +8,26 @@ const PlayerStatsApp = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedStat, setSelectedStat] = useState<string | null>(null);
     const [playerData] = useState(playerDataJson); // Use imported data directly
+
+    // List of stats that have top 10 rankings
+    const statsWithTop10 = [
+        'events', 'day2s', 'in_contentions', 'top8s', 'overall_wins', 
+        'overall_losses', 'overall_draws', 'overall_win_pct', 'limited_wins', 
+        'limited_losses', 'limited_draws', 'limited_win_pct', 'constructed_wins', 
+        'constructed_losses', 'constructed_draws', 'constructed_win_pct', 
+        'day1_wins', 'day1_losses', 'day1_draws', 'day1_win_pct', 'day2_wins', 
+        'day2_losses', 'day2_draws', 'day2_win_pct', 'day3_wins', 'day3_losses', 
+        'day3_draws', 'day3_win_pct', 'drafts', 'winning_drafts', 'losing_drafts', 
+        'winning_drafts_pct', 'trophy_drafts', '5streaks'
+    ];
 
     // Extract all players for autocomplete
     const players = useMemo(() => {
-        return Object.entries(playerData).map(([key, data]: [string, any]) => ({
+        return Object.entries(playerData.players).map(([key, data]: [string, any]) => ({
             id: key,
-            fullName: data. player.full_name,
+            fullName: data.player.full_name,
             data: data,
         }));
     }, [playerData]);
@@ -26,6 +39,33 @@ const PlayerStatsApp = () => {
             player.fullName.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [players, searchTerm]);
+
+    // Format date function
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
+
+        try {
+            const date = new Date(dateString);
+            const months = [
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+            ];
+
+            const month = months[date.getMonth()];
+            const day = date.getDate();
+            const year = date.getFullYear().toString().slice(-2);
+
+            return `${month} '${year}`;
+        } catch (error) {
+            return dateString;
+        }
+    };
+
+    // Format abbreviation function
+    const abbreviateFormat = (format: string) => {
+        if (!format) return '-';
+        return format.charAt(0).toUpperCase();
+    };
 
     const handlePlayerSelect = (player: any) => {
         setSelectedPlayer(player);
@@ -41,23 +81,106 @@ const PlayerStatsApp = () => {
         }
     };
 
-    const StatRow = ({ label, value }: { label: string; value: any }) => (
+    const handleStatSelect = (statKey: string) => {
+        setSelectedStat(selectedStat === statKey ? null : statKey);
+    };
+
+    // Get display name for stat
+    const getStatDisplayName = (statKey: string) => {
+        const displayNames: { [key: string]: string } = {
+            'events': 'Total Events',
+            'day2s': 'Day 2s',
+            'in_contentions': 'In Contentions',
+            'top8s': 'Top 8s',
+            'overall_wins': 'Overall Wins',
+            'overall_losses': 'Overall Losses',
+            'overall_draws': 'Overall Draws',
+            'overall_win_pct': 'Overall Win %',
+            'limited_wins': 'Limited Wins',
+            'limited_losses': 'Limited Losses',
+            'limited_draws': 'Limited Draws',
+            'limited_win_pct': 'Limited Win %',
+            'constructed_wins': 'Constructed Wins',
+            'constructed_losses': 'Constructed Losses',
+            'constructed_draws': 'Constructed Draws',
+            'constructed_win_pct': 'Constructed Win %',
+            'day1_wins': 'Day 1 Wins',
+            'day1_losses': 'Day 1 Losses',
+            'day1_draws': 'Day 1 Draws',
+            'day1_win_pct': 'Day 1 Win %',
+            'day2_wins': 'Day 2 Wins',
+            'day2_losses': 'Day 2 Losses',
+            'day2_draws': 'Day 2 Draws',
+            'day2_win_pct': 'Day 2 Win %',
+            'day3_wins': 'Day 3 Wins',
+            'day3_losses': 'Day 3 Losses',
+            'day3_draws': 'Day 3 Draws',
+            'day3_win_pct': 'Day 3 Win %',
+            'drafts': 'Total Drafts',
+            'winning_drafts': 'Winning Drafts',
+            'losing_drafts': 'Losing Drafts',
+            'winning_drafts_pct': 'Winning Drafts %',
+            'trophy_drafts': 'Trophy Drafts',
+            '5streaks': '5+ Win Streaks'
+        };
+        return displayNames[statKey] || statKey;
+    };
+
+    const StatRow = ({
+        stat1,
+        stat2,
+    }: {
+        stat1: { label: string; value: any; key: string };
+        stat2?: { label: string; value: any; key: string };
+    }) => (
         <tr className='hover:bg-gray-50'>
-            <td className='px-2 py-2 border-b text-left force-black-text'>{label}</td>
-            <td className='px-2 py-2 border-b text-right force-black-text'>{value}</td>
+            <td 
+                className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
+                    selectedStat === stat1.key ? 'bg-blue-100 force-blue-text' : 'force-black-text hover:bg-blue-50'
+                }`}
+                onClick={() => handleStatSelect(stat1.key)}
+            >
+                {stat1.label}
+            </td>
+            <td className='px-3 py-2 border-b text-left force-black-text w-1/4 border-r'>
+                {stat1.value}
+            </td>
+            {stat2 ? (
+                <>
+                    <td 
+                        className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
+                            selectedStat === stat2.key ? 'bg-blue-100 force-blue-text' : 'force-black-text hover:bg-blue-50'
+                        }`}
+                        onClick={() => handleStatSelect(stat2.key)}
+                    >
+                        {stat2.label}
+                    </td>
+                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'>
+                        {stat2.value}
+                    </td>
+                </>
+            ) : (
+                <>
+                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'></td>
+                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'></td>
+                </>
+            )}
         </tr>
     );
 
     const EventRow = ({ event }: { event: any }) => (
         <tr className='hover:bg-gray-50'>
             <td className='px-2 py-2 border-b text-center force-black-text'>
-                {event.event_number}
-            </td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>{event.date}</td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>{event.format}</td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>{event.deck}</td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>
                 {event.event_code}
+            </td>
+            <td className='px-2 py-2 border-b text-center force-black-text text-sm w-28'>
+                {formatDate(event.date)}
+            </td>
+            <td className='px-2 py-2 border-b text-center force-black-text w-12'>
+                {abbreviateFormat(event.format)}
+            </td>
+            <td className='px-2 py-2 border-b text-center force-black-text'>
+                {event.deck}
             </td>
             <td className='px-2 py-2 border-b text-center force-black-text'>
                 {event.notes || '-'}
@@ -65,22 +188,87 @@ const PlayerStatsApp = () => {
         </tr>
     );
 
+    // Top 10 Panel Component
+    const Top10Panel = () => {
+        if (!selectedStat) {
+            return (
+                <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
+                    <h3 className='text-lg font-bold mb-4 force-black-text'>
+                        Top 10 Rankings
+                    </h3>
+                    <p className='text-gray-500 text-center'>
+                        Select a stat to view rankings
+                    </p>
+                </div>
+            );
+        }
+
+        if (!playerData.top_10[selectedStat]) {
+            return (
+                <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
+                    <h3 className='text-lg font-bold mb-4 force-black-text'>
+                        {getStatDisplayName(selectedStat)}
+                    </h3>
+                    <p className='text-gray-500 text-center'>
+                        No top 10 available for this stat
+                    </p>
+                </div>
+            );
+        }
+
+        const top10Data = playerData.top_10[selectedStat];
+        const rankings = Object.values(top10Data) as any[];
+
+        return (
+            <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
+                <h3 className='text-lg font-bold mb-4 force-black-text'>
+                    Top 10: {getStatDisplayName(selectedStat)}
+                </h3>
+                <div className='space-y-2'>
+                    {rankings.map((entry: any) => (
+                        <div 
+                            key={entry.rank} 
+                            className='flex justify-between items-center py-2 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
+                        >
+                            <div className='flex items-center gap-3'>
+                                <span className='font-bold text-gray-600 w-6'>
+                                    #{entry.rank}
+                                </span>
+                                <span className='force-black-text font-medium'>
+                                    {entry.player_full_name}
+                                </span>
+                            </div>
+                            <span className='force-black-text font-bold'>
+                                {selectedStat.includes('pct') ? `${entry.stat_value}%` : entry.stat_value}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className='min-h-screen bg-gray-50 p-6'>
-            <style dangerouslySetInnerHTML={{
-                __html: `
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
                     .force-black-text {
                         color: #000000 !important;
                     }
-                `
-            }} />
+                    .force-blue-text {
+                        color: #2563eb !important;
+                    }
+                `,
+                }}
+            />
             <div className='max-w-7xl mx-auto'>
                 <h1 className='text-3xl font-bold mb-8 force-black-text'>
                     Player Stats Dashboard
                 </h1>
 
                 {/* Search Section */}
-                <div className='bg-white rounded-lg shadow-md p-6 mb-8'>
+                <div className='bg-white rounded-lg shadow-md p-6 mb-8 max-w-4xl'>
                     <div className='relative'>
                         <div className='flex items-center'>
                             <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
@@ -100,9 +288,7 @@ const PlayerStatsApp = () => {
                                 {filteredPlayers.map((player) => (
                                     <div
                                         key={player.id}
-                                        onClick={() =>
-                                            handlePlayerSelect(player)
-                                        }
+                                        onClick={() => handlePlayerSelect(player)}
                                         className='px-4 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 force-black-text'
                                     >
                                         {player.fullName}
@@ -113,21 +299,163 @@ const PlayerStatsApp = () => {
                     </div>
                 </div>
 
-                {/* Player Data Display - Stacked Vertically with Events First */}
+                {/* Player Data Display */}
                 {selectedPlayer && (
                     <div className='space-y-6'>
-                        {/* Events Table - Now First */}
+                        {/* Stats Table with Side Panel */}
+                        <div className='flex gap-6'>
+                            {/* Stats Table */}
+                            <div className='bg-white rounded-lg shadow-md p-6 flex-grow'>
+                                <h2 className='text-xl font-bold mb-6 force-black-text'>
+                                    Overall Statistics
+                                </h2>
+
+                                <div className='overflow-x-auto'>
+                                    <table className='w-full border-collapse border border-gray-200'>
+                                        <tbody>
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Total Events',
+                                                    value: selectedPlayer.data.stats.events,
+                                                    key: 'events'
+                                                }}
+                                                stat2={{
+                                                    label: 'Day 2s',
+                                                    value: selectedPlayer.data.stats.day2s,
+                                                    key: 'day2s'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'In Contentions',
+                                                    value: selectedPlayer.data.stats.in_contentions,
+                                                    key: 'in_contentions'
+                                                }}
+                                                stat2={{
+                                                    label: 'Top 8s',
+                                                    value: selectedPlayer.data.stats.top8s,
+                                                    key: 'top8s'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Overall Record',
+                                                    value: selectedPlayer.data.stats.overall_record,
+                                                    key: 'overall_record'
+                                                }}
+                                                stat2={{
+                                                    label: 'Overall Win %',
+                                                    value: `${selectedPlayer.data.stats.overall_win_pct}%`,
+                                                    key: 'overall_win_pct'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Limited Record',
+                                                    value: selectedPlayer.data.stats.limited_record,
+                                                    key: 'limited_record'
+                                                }}
+                                                stat2={{
+                                                    label: 'Limited Win %',
+                                                    value: `${selectedPlayer.data.stats.limited_win_pct}%`,
+                                                    key: 'limited_win_pct'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Constructed Record',
+                                                    value: selectedPlayer.data.stats.constructed_record,
+                                                    key: 'constructed_record'
+                                                }}
+                                                stat2={{
+                                                    label: 'Constructed Win %',
+                                                    value: `${selectedPlayer.data.stats.constructed_win_pct}%`,
+                                                    key: 'constructed_win_pct'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Day 1 Win %',
+                                                    value: `${selectedPlayer.data.stats.day1_win_pct}%`,
+                                                    key: 'day1_win_pct'
+                                                }}
+                                                stat2={{
+                                                    label: 'Day 2 Win %',
+                                                    value: `${selectedPlayer.data.stats.day2_win_pct}%`,
+                                                    key: 'day2_win_pct'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Day 3 Win %',
+                                                    value: `${selectedPlayer.data.stats.day3_win_pct}%`,
+                                                    key: 'day3_win_pct'
+                                                }}
+                                                stat2={{
+                                                    label: 'Top 8 Record',
+                                                    value: selectedPlayer.data.stats.top8_record,
+                                                    key: 'top8_record'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Total Drafts',
+                                                    value: selectedPlayer.data.stats.drafts,
+                                                    key: 'drafts'
+                                                }}
+                                                stat2={{
+                                                    label: 'Winning Drafts %',
+                                                    value: `${selectedPlayer.data.stats.winning_drafts_pct}%`,
+                                                    key: 'winning_drafts_pct'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Trophy Drafts',
+                                                    value: selectedPlayer.data.stats.trophy_drafts,
+                                                    key: 'trophy_drafts'
+                                                }}
+                                                stat2={{
+                                                    label: '5+ Win Streaks',
+                                                    value: selectedPlayer.data.stats['5streaks'],
+                                                    key: '5streaks'
+                                                }}
+                                            />
+                                            <StatRow
+                                                stat1={{
+                                                    label: 'Longest Win Streak',
+                                                    value: selectedPlayer.data.stats.longest_win_streak || 'N/A',
+                                                    key: 'longest_win_streak'
+                                                }}
+                                                stat2={{
+                                                    label: 'Longest Loss Streak',
+                                                    value: selectedPlayer.data.stats.longest_loss_streak || 'N/A',
+                                                    key: 'longest_loss_streak'
+                                                }}
+                                            />
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Top 10 Side Panel */}
+                            <div className='w-80'>
+                                <Top10Panel />
+                            </div>
+                        </div>
+
+                        {/* Events Table */}
                         <div className='bg-white rounded-lg shadow-md p-6'>
                             <h3 className='text-xl font-bold mb-6 force-black-text'>
-                                {selectedPlayer.data.player.full_name} - Events History
+                                Events History
                             </h3>
 
-                            <div className='overflow-x-auto max-h-96 overflow-y-auto'>
+                            <div className='overflow-x-auto'>
                                 <table className='w-full border-collapse border border-gray-200'>
-                                    <thead className='sticky top-0 bg-white'>
+                                    <thead>
                                         <tr className='bg-gray-100'>
                                             <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Event #
+                                                Event Code
                                             </th>
                                             <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
                                                 Date
@@ -139,153 +467,14 @@ const PlayerStatsApp = () => {
                                                 Deck
                                             </th>
                                             <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Event Code
-                                            </th>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
                                                 Notes
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values(
-                                            selectedPlayer.data.events
-                                        ).map((event: any, index: number) => (
-                                            <EventRow
-                                                key={index}
-                                                event={event}
-                                            />
+                                        {Object.values(selectedPlayer.data.events).map((event: any, index: number) => (
+                                            <EventRow key={index} event={event} />
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Stats Table - Now Second */}
-                        <div className='bg-white rounded-lg shadow-md p-6'>
-                            <h2 className='text-xl font-bold mb-6 force-black-text'>
-                                Overall Statistics
-                            </h2>
-
-                            <div className='overflow-x-auto'>
-                                <table className='w-full border-collapse border border-gray-200'>
-                                    <tbody>
-                                        <StatRow
-                                            label='Total Events'
-                                            value={
-                                                selectedPlayer.data.stats.events
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Day 2s'
-                                            value={
-                                                selectedPlayer.data.stats.day2s
-                                            }
-                                        />
-                                        <StatRow
-                                            label='In Contentions'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .in_contentions
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Top 8s'
-                                            value={
-                                                selectedPlayer.data.stats.top8s
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Overall Record'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .overall_record
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Overall Win %'
-                                            value={`${selectedPlayer.data.stats.overall_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Limited Record'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .limited_record
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Limited Win %'
-                                            value={`${selectedPlayer.data.stats.limited_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Constructed Record'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .constructed_record
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Constructed Win %'
-                                            value={`${selectedPlayer.data.stats.constructed_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Day 1 Win %'
-                                            value={`${selectedPlayer.data.stats.day1_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Day 2 Win %'
-                                            value={`${selectedPlayer.data.stats.day2_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Day 3 Win %'
-                                            value={`${selectedPlayer.data.stats.day3_win_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Top 8 Record'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .top8_record
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Total Drafts'
-                                            value={
-                                                selectedPlayer.data.stats.drafts
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Winning Drafts %'
-                                            value={`${selectedPlayer.data.stats.winning_drafts_pct}%`}
-                                        />
-                                        <StatRow
-                                            label='Trophy Drafts'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .trophy_drafts
-                                            }
-                                        />
-                                        <StatRow
-                                            label='5+ Win Streaks'
-                                            value={
-                                                selectedPlayer.data.stats[
-                                                    '5streaks'
-                                                ]
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Longest Win Streak'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .longest_win_streak || 'N/A'
-                                            }
-                                        />
-                                        <StatRow
-                                            label='Longest Loss Streak'
-                                            value={
-                                                selectedPlayer.data.stats
-                                                    .longest_loss_streak ||
-                                                'N/A'
-                                            }
-                                        />
                                     </tbody>
                                 </table>
                             </div>
