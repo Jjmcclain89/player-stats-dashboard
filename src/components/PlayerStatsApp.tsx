@@ -14,7 +14,7 @@ const PlayerStatsApp = () => {
     const players = useMemo(() => {
         return Object.entries(playerData).map(([key, data]: [string, any]) => ({
             id: key,
-            fullName: data.player_info.full_name,
+            fullName: data. player.full_name,
             data: data,
         }));
     }, [playerData]);
@@ -50,16 +50,16 @@ const PlayerStatsApp = () => {
 
     const EventRow = ({ event }: { event: any }) => (
         <tr className='hover:bg-gray-50'>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
+            <td className='px-2 py-2 border-b text-center force-black-text'>
                 {event.event_number}
             </td>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.date}</td>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.format}</td>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>{event.deck}</td>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
+            <td className='px-2 py-2 border-b text-center force-black-text'>{event.date}</td>
+            <td className='px-2 py-2 border-b text-center force-black-text'>{event.format}</td>
+            <td className='px-2 py-2 border-b text-center force-black-text'>{event.deck}</td>
+            <td className='px-2 py-2 border-b text-center force-black-text'>
                 {event.event_code}
             </td>
-            <td className='px-1 py-1 border-b text-center text-xs force-black-text'>
+            <td className='px-2 py-2 border-b text-center force-black-text'>
                 {event.notes || '-'}
             </td>
         </tr>
@@ -113,13 +113,56 @@ const PlayerStatsApp = () => {
                     </div>
                 </div>
 
-                {/* Player Data Display - Side by Side */}
+                {/* Player Data Display - Stacked Vertically with Events First */}
                 {selectedPlayer && (
-                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-                        {/* Stats Table */}
+                    <div className='space-y-6'>
+                        {/* Events Table - Now First */}
+                        <div className='bg-white rounded-lg shadow-md p-6'>
+                            <h3 className='text-xl font-bold mb-6 force-black-text'>
+                                {selectedPlayer.data.player.full_name} - Events History
+                            </h3>
+
+                            <div className='overflow-x-auto max-h-96 overflow-y-auto'>
+                                <table className='w-full border-collapse border border-gray-200'>
+                                    <thead className='sticky top-0 bg-white'>
+                                        <tr className='bg-gray-100'>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Event #
+                                            </th>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Date
+                                            </th>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Format
+                                            </th>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Deck
+                                            </th>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Event Code
+                                            </th>
+                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
+                                                Notes
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Object.values(
+                                            selectedPlayer.data.events
+                                        ).map((event: any, index: number) => (
+                                            <EventRow
+                                                key={index}
+                                                event={event}
+                                            />
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Stats Table - Now Second */}
                         <div className='bg-white rounded-lg shadow-md p-6'>
                             <h2 className='text-xl font-bold mb-6 force-black-text'>
-                                {selectedPlayer.data.player_info.full_name} -
                                 Overall Statistics
                             </h2>
 
@@ -243,50 +286,6 @@ const PlayerStatsApp = () => {
                                                 'N/A'
                                             }
                                         />
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Events Table */}
-                        <div className='bg-white rounded-lg shadow-md p-6'>
-                            <h3 className='text-xl font-bold mb-6 force-black-text'>
-                                Events History
-                            </h3>
-
-                            <div className='overflow-x-auto max-h-96 overflow-y-auto'>
-                                <table className='w-full border-collapse border border-gray-200'>
-                                    <thead className='sticky top-0 bg-white'>
-                                        <tr className='bg-gray-100'>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Event #
-                                            </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Date
-                                            </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Format
-                                            </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Deck
-                                            </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Event Code
-                                            </th>
-                                            <th className='px-1 py-2 border-b font-semibold text-center text-xs force-black-text'>
-                                                Notes
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Object.values(
-                                            selectedPlayer.data.events
-                                        ).map((event: any, index: number) => (
-                                            <EventRow
-                                                key={index}
-                                                event={event}
-                                            />
-                                        ))}
                                     </tbody>
                                 </table>
                             </div>
