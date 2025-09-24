@@ -271,7 +271,7 @@ const PlayerStatsApp = () => {
                                         #{playerRank}
                                     </span>
                                     <span className='force-black-text font-medium text-sm'>
-                                        {selectedPlayer.fullName} (You)
+                                        {selectedPlayer.fullName}
                                     </span>
                                 </div>
                                 <span className='force-black-text font-bold text-sm'>
