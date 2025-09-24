@@ -36,7 +36,20 @@ const PlayerStatsApp = () => {
 
         try {
             const date = new Date(dateString);
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const months = [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
+            ];
 
             const month = months[date.getMonth()];
             const day = date.getDate();
@@ -52,9 +65,9 @@ const PlayerStatsApp = () => {
     const abbreviateFormat = (format: string) => {
         if (!format) return '-';
         const formatMap: { [key: string]: string } = {
-            "Standard": "STD",
-            "Modern": "MOD",
-            "Pioneer": "PIO",
+            Standard: 'STD',
+            Modern: 'MOD',
+            Pioneer: 'PIO',
         };
         return formatMap[format] || format.substring(0, 3).toUpperCase();
     };
@@ -135,7 +148,7 @@ const PlayerStatsApp = () => {
 
         return (
             <tr>
-                <td colSpan={2} className="p-0">
+                <td colSpan={2} className='p-0'>
                     <div
                         className={`flex cursor-pointer ${
                             selectedStat === stat1.key
@@ -148,16 +161,16 @@ const PlayerStatsApp = () => {
                         onMouseEnter={() => setHoveredStat(stat1.key)}
                         onMouseLeave={() => setHoveredStat(null)}
                     >
-                        <div className="px-3 py-2 border-b text-left font-medium w-1/2 border-r">
+                        <div className='px-3 py-2 border-b text-left font-medium w-1/2 border-r'>
                             {stat1.label}
                         </div>
-                        <div className="px-3 py-2 border-b text-left w-1/2">
+                        <div className='px-3 py-2 border-b text-left w-1/2'>
                             {stat1.value}
                         </div>
                     </div>
                 </td>
                 {stat2 ? (
-                    <td colSpan={2} className="p-0">
+                    <td colSpan={2} className='p-0'>
                         <div
                             className={`flex cursor-pointer ${
                                 selectedStat === stat2.key
@@ -170,39 +183,85 @@ const PlayerStatsApp = () => {
                             onMouseEnter={() => setHoveredStat(stat2.key)}
                             onMouseLeave={() => setHoveredStat(null)}
                         >
-                            <div className="px-3 py-2 border-b text-left font-medium w-1/2">
+                            <div className='px-3 py-2 border-b text-left font-medium w-1/2'>
                                 {stat2.label}
                             </div>
-                            <div className="px-3 py-2 border-b text-left w-1/2">
+                            <div className='px-3 py-2 border-b text-left w-1/2'>
                                 {stat2.value}
                             </div>
                         </div>
                     </td>
                 ) : (
-                    <td colSpan={2} className='px-3 py-2 border-b text-left force-black-text'></td>
+                    <td
+                        colSpan={2}
+                        className='px-3 py-2 border-b text-left force-black-text'
+                    ></td>
                 )}
             </tr>
         );
     };
 
-    const EventRow = ({ event }: { event: any }) => (
-        <tr className='hover:bg-gray-50'>
-            <td className='px-2 py-2 border-b text-center force-black-text'>
-                {event.event_code}
-            </td>
-            <td className='px-2 py-2 border-b text-center force-black-text text-sm w-28'>
-                {formatDate(event.date)}
-            </td>
-            <td className='px-2 py-2 border-b text-center force-black-text w-12'>
-                {abbreviateFormat(event.format)}
-            </td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>
-                {event.deck}
-            </td>
-            <td className='px-2 py-2 border-b text-center force-black-text'>
-                {event.notes || '-'}
-            </td>
-        </tr>
+    // Get header color based on format
+    const getFormatHeaderColor = (format: string) => {
+        const formatColors: { [key: string]: string } = {
+            Standard: 'bg-blue-100',
+            Modern: 'bg-green-100',
+            Pioneer: 'bg-red-100',
+        };
+        return formatColors[format] || 'bg-gray-50';
+    };
+
+    // Event Card Component
+    const EventCard = ({ event }: { event: any }) => (
+        <div className='bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow max-w-sm'>
+            {/* Header */}
+            <div
+                className={`px-3 py-2 border-b border-gray-200 rounded-t-lg ${getFormatHeaderColor(
+                    event.format
+                )}`}
+            >
+                <div className='flex justify-between items-center'>
+                    <h4 className='text-base font-bold force-black-text'>
+                        {event.event_code}
+                    </h4>
+                    <div className='text-right'>
+                        <div className='text-sm font-medium force-black-text'>
+                            {abbreviateFormat(event.format)}
+                        </div>
+                        <div className='text-xs text-gray-600'>
+                            {formatDate(event.date)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Deck Section */}
+            <div className='px-3 py-2 border-b border-gray-200'>
+                <div className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
+                    Deck
+                </div>
+                <div className='text-sm font-medium force-black-text'>
+                    {event.deck || 'No deck specified'}
+                </div>
+            </div>
+
+            {/* Notes Section */}
+            <div className='px-3 py-2'>
+                <div className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
+                    Notes
+                </div>
+                <div className='text-sm force-black-text line-clamp-2 min-h-[2.5rem]'>
+                    {event.notes || 'No notes'}
+                    {!event.notes && (
+                        <div className='invisible'>
+                            This is invisible placeholder text to ensure
+                            consistent card height when there are no notes
+                            present in the event data.
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 
     // Top 10 Panel Component
@@ -295,7 +354,7 @@ const PlayerStatsApp = () => {
             </div>
         );
     };
-    
+
     // HTML Render
     return (
         <div className='min-h-screen bg-gray-50 p-6'>
@@ -307,6 +366,12 @@ const PlayerStatsApp = () => {
                     }
                     .force-blue-text {
                         color: #2563eb !important;
+                    }
+                    .line-clamp-2 {
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
                     }
                 `,
                 }}
@@ -502,44 +567,18 @@ const PlayerStatsApp = () => {
                             </div>
                         </div>
 
-                        {/* Events Table */}
+                        {/* Events Cards Section */}
                         <div className='bg-white rounded-lg shadow-md p-6'>
                             <h3 className='text-xl font-bold mb-6 force-black-text'>
                                 Events History
                             </h3>
 
-                            <div className='overflow-x-auto'>
-                                <table className='w-full border-collapse border border-gray-200'>
-                                    <thead>
-                                        <tr className='bg-gray-100'>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Event Code
-                                            </th>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Date
-                                            </th>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Format
-                                            </th>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Deck
-                                            </th>
-                                            <th className='px-2 py-2 border-b font-semibold text-center force-black-text'>
-                                                Notes
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Object.values(
-                                            selectedPlayer.data.events
-                                        ).map((event: any, index: number) => (
-                                            <EventRow
-                                                key={index}
-                                                event={event}
-                                            />
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center'>
+                                {Object.values(selectedPlayer.data.events).map(
+                                    (event: any, index: number) => (
+                                        <EventCard key={index} event={event} />
+                                    )
+                                )}
                             </div>
                         </div>
                     </div>
