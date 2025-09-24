@@ -38,7 +38,7 @@ WITH player_events AS (
     r.negative_drafts,
     r.trophy_drafts,
     r.no_win_drafts,
-	  r.overall_record,
+	r.overall_record,
     ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY e.date) as event_number
   FROM players p
   JOIN results r ON p.id = r.player_id
@@ -155,7 +155,7 @@ player_rankings AS (
         ELSE winning_drafts::numeric / (winning_drafts + losing_drafts) * 100
       END, 2
     ) AS winning_drafts_pct,
-    -- Calculate rankings
+    -- Calculate rankings (non-percentage stats unchanged)
     ROW_NUMBER() OVER (ORDER BY total_events DESC) as events_rank,
     ROW_NUMBER() OVER (ORDER BY day2s DESC) as day2s_rank,
     ROW_NUMBER() OVER (ORDER BY in_contentions DESC) as in_contentions_rank,
@@ -185,21 +185,63 @@ player_rankings AS (
     ROW_NUMBER() OVER (ORDER BY streaks_5 DESC) as streaks_5_rank
   FROM player_stats
 ),
--- Add win percentage rankings
+-- Add win percentage rankings (MODIFIED: Only rank players with 5+ events for percentage stats)
 player_rankings_with_pct AS (
   SELECT 
     *,
-    ROW_NUMBER() OVER (ORDER BY overall_win_pct DESC) as overall_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY limited_win_pct DESC) as limited_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY constructed_win_pct DESC) as constructed_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY day1_win_pct DESC) as day1_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY day2_win_pct DESC) as day2_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY day3_win_pct DESC) as day3_win_pct_rank,
-    ROW_NUMBER() OVER (ORDER BY winning_drafts_pct DESC) as winning_drafts_pct_rank
+    -- Percentage rankings only consider players with 5+ events
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN overall_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as overall_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN limited_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as limited_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN constructed_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as constructed_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN day1_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as day1_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN day2_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as day2_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN day3_win_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as day3_win_pct_rank,
+    
+    CASE WHEN total_events >= 5 THEN 
+      ROW_NUMBER() OVER (
+        PARTITION BY CASE WHEN total_events >= 5 THEN 1 ELSE 0 END 
+        ORDER BY CASE WHEN total_events >= 5 THEN winning_drafts_pct ELSE NULL END DESC NULLS LAST
+      ) 
+    ELSE NULL END as winning_drafts_pct_rank
   FROM player_rankings
 ),
 
--- Keep your existing top 10 CTEs for the top_10 section
+-- Keep your existing non-percentage top 10 CTEs unchanged
 top10_events AS (
   SELECT rank, player_full_name, events AS stat_value
   FROM (SELECT first_name || ' ' || last_name as player_full_name, total_events as events, ROW_NUMBER() OVER (ORDER BY total_events DESC) as rank FROM player_stats) t
@@ -235,6 +277,7 @@ top10_overall_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, overall_draws, ROW_NUMBER() OVER (ORDER BY overall_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Only include players with 5+ events in percentage-based top 10s
 top10_overall_win_pct AS (
   SELECT rank, player_full_name, overall_win_pct AS stat_value
   FROM (
@@ -255,6 +298,7 @@ top10_overall_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -274,6 +318,7 @@ top10_limited_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, limited_draws, ROW_NUMBER() OVER (ORDER BY limited_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Limited win percentage - 5+ events only
 top10_limited_win_pct AS (
   SELECT rank, player_full_name, limited_win_pct AS stat_value
   FROM (
@@ -294,6 +339,7 @@ top10_limited_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -312,6 +358,7 @@ top10_constructed_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, constructed_draws, ROW_NUMBER() OVER (ORDER BY constructed_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Constructed win percentage - 5+ events only
 top10_constructed_win_pct AS (
   SELECT rank, player_full_name, constructed_win_pct AS stat_value
   FROM (
@@ -332,6 +379,7 @@ top10_constructed_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -350,6 +398,7 @@ top10_day1_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, day1_draws, ROW_NUMBER() OVER (ORDER BY day1_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Day 1 win percentage - 5+ events only
 top10_day1_win_pct AS (
   SELECT rank, player_full_name, day1_win_pct AS stat_value
   FROM (
@@ -370,6 +419,7 @@ top10_day1_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -388,6 +438,7 @@ top10_day2_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, day2_draws, ROW_NUMBER() OVER (ORDER BY day2_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Day 2 win percentage - 5+ events only
 top10_day2_win_pct AS (
   SELECT rank, player_full_name, day2_win_pct AS stat_value
   FROM (
@@ -408,6 +459,7 @@ top10_day2_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -426,6 +478,7 @@ top10_day3_draws AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, day3_draws, ROW_NUMBER() OVER (ORDER BY day3_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Day 3 win percentage - 5+ events only
 top10_day3_win_pct AS (
   SELECT rank, player_full_name, day3_win_pct AS stat_value
   FROM (
@@ -446,6 +499,7 @@ top10_day3_win_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -464,6 +518,7 @@ top10_losing_drafts AS (
   FROM (SELECT first_name || ' ' || last_name as player_full_name, losing_drafts, ROW_NUMBER() OVER (ORDER BY losing_drafts DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
+-- MODIFIED: Winning drafts percentage - 5+ events only
 top10_winning_drafts_pct AS (
   SELECT rank, player_full_name, winning_drafts_pct AS stat_value
   FROM (
@@ -484,6 +539,7 @@ top10_winning_drafts_pct AS (
         ) DESC
       ) as rank 
     FROM player_stats
+    WHERE total_events >= 5  -- Only players with 5+ events
   ) t
   WHERE rank <= 10
 ),
@@ -498,6 +554,7 @@ top10_5streaks AS (
   WHERE rank <= 10
 )
 
+-- Rest of your SELECT statement remains the same
 SELECT json_build_object(
   'players', (
     SELECT json_object_agg(
@@ -518,8 +575,8 @@ SELECT json_build_object(
               'format', pe.format,
               'deck', pe.deck,
               'notes', pe.notes,
-              'finish', pe.finish,
-			        'record', pe.overall_record
+			  'record', pe.overall_record,
+              'finish', pe.finish
             )
           )
           FROM player_events pe
