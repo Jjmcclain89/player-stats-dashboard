@@ -72,6 +72,35 @@ const PlayerStatsApp = () => {
         return formatMap[format] || format.substring(0, 3).toUpperCase();
     };
 
+    // Format finish with ordinal suffix
+    const formatFinish = (finish: string | number) => {
+        if (!finish) return '';
+        const num = parseInt(finish.toString());
+        if (isNaN(num)) return finish.toString();
+
+        const suffix = (num) => {
+            const lastDigit = num % 10;
+            const lastTwoDigits = num % 100;
+
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+                return 'th';
+            }
+
+            switch (lastDigit) {
+                case 1:
+                    return 'st';
+                case 2:
+                    return 'nd';
+                case 3:
+                    return 'rd';
+                default:
+                    return 'th';
+            }
+        };
+
+        return `${num}${suffix(num)} place`;
+    };
+
     const handlePlayerSelect = (player: any) => {
         setSelectedPlayer(player);
         setSearchTerm(player.fullName);
@@ -213,18 +242,44 @@ const PlayerStatsApp = () => {
 
     // Event Card Component
     const EventCard = ({ event }: { event: any }) => (
-        <div className='bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow max-w-sm'>
+        <div className='bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow w-full'>
             {/* Header */}
             <div
                 className={`px-3 py-2 border-b border-gray-200 rounded-t-lg ${getFormatHeaderColor(
                     event.format
                 )}`}
             >
-                <div className='flex justify-between items-center'>
+                <div className='flex items-center justify-between'>
                     <h4 className='text-base font-bold force-black-text'>
                         {event.event_code}
                     </h4>
-                    <div className='text-right'>
+                    <div className='flex items-center gap-3'>
+                        {event.overall_record && (
+                            <span className='force-black-text font-medium text-sm'>
+                                {event.overall_record}
+                            </span>
+                        )}
+                        {event.finish && (
+                            <span className='force-black-text font-medium text-sm'>
+                                {formatFinish(event.finish)}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Deck Section with Format and Date */}
+            <div className='px-3 py-2 border-b border-gray-200'>
+                <div className='flex justify-between items-start'>
+                    <div className='flex-1'>
+                        <div className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
+                            Deck
+                        </div>
+                        <div className='text-sm font-medium force-black-text'>
+                            {event.deck || 'No deck'}
+                        </div>
+                    </div>
+                    <div className='text-right ml-3'>
                         <div className='text-sm font-medium force-black-text'>
                             {abbreviateFormat(event.format)}
                         </div>
@@ -232,16 +287,6 @@ const PlayerStatsApp = () => {
                             {formatDate(event.date)}
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Deck Section */}
-            <div className='px-3 py-2 border-b border-gray-200'>
-                <div className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
-                    Deck
-                </div>
-                <div className='text-sm font-medium force-black-text'>
-                    {event.deck || 'No deck specified'}
                 </div>
             </div>
 
@@ -275,6 +320,46 @@ const PlayerStatsApp = () => {
                     <p className='text-gray-500 text-center'>
                         Select a stat to view rankings
                     </p>
+
+                    {/* Invisible placeholder content to maintain height */}
+                    <div className='space-y-1 invisible'>
+                        {Array.from({ length: 9 }, (_, i) => (
+                            <div
+                                key={i}
+                                className='flex justify-between items-center py-1 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
+                            >
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-bold text-gray-600 w-6 text-sm'>
+                                        #{i + 1}
+                                    </span>
+                                    <span className='force-black-text font-medium text-sm'>
+                                        Player Name Here
+                                    </span>
+                                </div>
+                                <span className='force-black-text font-bold text-sm'>
+                                    100
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Invisible player rank placeholder */}
+                    <div className='border-t border-gray-200 my-4 invisible'></div>
+                    <div className='bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded invisible'>
+                        <div className='flex justify-between items-center'>
+                            <div className='flex items-center gap-4'>
+                                <span className='font-bold text-yellow-700 w-6 text-sm pr-5'>
+                                    #50
+                                </span>
+                                <span className='force-black-text font-medium text-sm'>
+                                    Your Player Name
+                                </span>
+                            </div>
+                            <span className='force-black-text font-bold text-sm'>
+                                50
+                            </span>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -288,6 +373,46 @@ const PlayerStatsApp = () => {
                     <p className='text-gray-500 text-center'>
                         No top 10 available for this stat
                     </p>
+
+                    {/* Invisible placeholder content to maintain height */}
+                    <div className='space-y-1 invisible'>
+                        {Array.from({ length: 10 }, (_, i) => (
+                            <div
+                                key={i}
+                                className='flex justify-between items-center py-1 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
+                            >
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-bold text-gray-600 w-6 text-sm'>
+                                        #{i + 1}
+                                    </span>
+                                    <span className='force-black-text font-medium text-sm'>
+                                        Player Name Here
+                                    </span>
+                                </div>
+                                <span className='force-black-text font-bold text-sm'>
+                                    100
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Invisible player rank placeholder */}
+                    <div className='border-t border-gray-200 my-4 invisible'></div>
+                    <div className='bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded invisible'>
+                        <div className='flex justify-between items-center'>
+                            <div className='flex items-center gap-4'>
+                                <span className='font-bold text-yellow-700 w-6 text-sm pr-5'>
+                                    #50
+                                </span>
+                                <span className='force-black-text font-medium text-sm'>
+                                    Your Player Name
+                                </span>
+                            </div>
+                            <span className='force-black-text font-bold text-sm'>
+                                50
+                            </span>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -573,7 +698,7 @@ const PlayerStatsApp = () => {
                                 Events History
                             </h3>
 
-                            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center'>
+                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                                 {Object.values(selectedPlayer.data.events).map(
                                     (event: any, index: number) => (
                                         <EventCard key={index} event={event} />
