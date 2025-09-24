@@ -38,6 +38,7 @@ WITH player_events AS (
     r.negative_drafts,
     r.trophy_drafts,
     r.no_win_drafts,
+	  r.overall_record,
     ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY e.date) as event_number
   FROM players p
   JOIN results r ON p.id = r.player_id
@@ -517,7 +518,8 @@ SELECT json_build_object(
               'format', pe.format,
               'deck', pe.deck,
               'notes', pe.notes,
-              'finish', pe.finish
+              'finish', pe.finish,
+			        'record', pe.overall_record
             )
           )
           FROM player_events pe
