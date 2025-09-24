@@ -254,9 +254,9 @@ const PlayerStatsApp = () => {
                         {event.event_code}
                     </h4>
                     <div className='flex items-center gap-3'>
-                        {event.overall_record && (
-                            <span className='force-black-text font-medium text-sm'>
-                                {event.overall_record}
+                        {event.record && (
+                            <span className='force-black-text font-medium text-sm pr-4'>
+                                {event.record}
                             </span>
                         )}
                         {event.finish && (

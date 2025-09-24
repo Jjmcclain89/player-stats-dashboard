@@ -39,10 +39,7 @@ WITH player_events AS (
     r.negative_drafts,
     r.trophy_drafts,
     r.no_win_drafts,
-    -- Calculate event record (total wins-losses-draws for this specific event)
-    (r.day1_wins + r.day2_wins + r.day3_wins) as event_wins,
-    (r.day1_losses + r.day2_losses + r.day3_losses) as event_losses,
-    (r.day1_draws + r.day2_draws + r.day3_draws) as event_draws,
+    r.overall_record,
     ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY e.date) as event_number
   FROM players p
   JOIN results r ON p.id = r.player_id
@@ -79,7 +76,9 @@ player_stats AS (
     SUM(positive_drafts) as winning_drafts,
     SUM(negative_drafts) as losing_drafts,
     SUM(trophy_drafts) as trophy_drafts,
-    SUM(streak5) as streaks_5
+    SUM(streak5) as streaks_5,
+	MAX(win_streak) as max_win_streak,
+	MAX(loss_streak) as max_loss_streak
   FROM player_events
   GROUP BY player_id, first_name, last_name
 )
@@ -93,14 +92,17 @@ SELECT json_agg(
     'events', (
       SELECT json_agg(
         json_build_object(
-          'event_code', pe.event_name,
+          'event_code',  REPLACE(pe.event_name, ' ', ''),
           'event_id', pe.event_id,
           'date', pe.date,
           'format', pe.format,
           'deck', pe.deck,
           'notes', pe.notes,
           'finish', pe.finish,
-          'record', pe.event_wins || '-' || pe.event_losses || '-' || pe.event_draws
+          'record', pe.overall_record,
+		  'win_streak', pe.win_streak,
+		  'loss_streak', pe.loss_streak,
+		  'trophy_drafts', trophy_drafts
         ) ORDER BY pe.date
       )
       FROM player_events pe
@@ -179,6 +181,8 @@ SELECT json_agg(
         END, 2
       ),
       'trophy_drafts', ps.trophy_drafts,
+	  'max_win_streak', ps.max_win_streak,
+	  'max_loss_streak', ps.max_loss_streak,
       '5streaks', ps.streaks_5
     )
   )
