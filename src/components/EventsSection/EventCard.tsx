@@ -1,5 +1,5 @@
 // EventsSection/EventCard.tsx
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Event } from '../shared/types';
 import { formatDate, abbreviateFormat, formatFinish, getFormatHeaderColor } from '../shared/utils';
@@ -10,6 +10,17 @@ interface EventCardProps {
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const eventLink = `/events/${encodeURIComponent(event.event_code)}`;
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isTextTruncated, setIsTextTruncated] = useState(false);
+  const notesRef = useRef<HTMLDivElement>(null);
+
+  // Check if text is truncated
+  useEffect(() => {
+    if (notesRef.current && event.notes) {
+      const element = notesRef.current;
+      setIsTextTruncated(element.scrollHeight > element.clientHeight);
+    }
+  }, [event.notes]);
 
   return (
     <Link href={eventLink} className='block'>
@@ -68,13 +79,31 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <div className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
             Notes
           </div>
-          <div className='text-sm force-black-text line-clamp-2 min-h-[2.5rem]'>
-            {event.notes || 'No notes'}
-            {!event.notes && (
-              <div className='invisible'>
-                This is invisible placeholder text to ensure
-                consistent card height when there are no notes
-                present in the event data.
+          <div className='relative'>
+            <div
+              ref={notesRef}
+              className='text-sm force-black-text line-clamp-3 min-h-[3.5rem]'
+              onMouseEnter={() => isTextTruncated && setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              {event.notes || 'No notes'}
+              {!event.notes && (
+                <div className='invisible'>
+                  This is invisible placeholder text to ensure
+                  consistent card height when there are no notes
+                  present in the event data.
+                </div>
+              )}
+            </div>
+            
+            {/* Tooltip */}
+            {showTooltip && isTextTruncated && event.notes && (
+              <div className='absolute z-10 bottom-full left-0 right-0 mb-2 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg max-w-sm'>
+                <div className='whitespace-pre-wrap break-words'>
+                  {event.notes}
+                </div>
+                {/* Tooltip arrow */}
+                <div className='absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900'></div>
               </div>
             )}
           </div>
