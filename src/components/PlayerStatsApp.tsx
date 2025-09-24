@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import playerDataJson from '../data/data.json';
 import { SearchBar } from './SearchBar';
 import { StatsTable } from './StatsTable';
@@ -13,7 +13,7 @@ const PlayerStatsApp = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedStat, setSelectedStat] = useState<string | null>(null);
-  const [playerData] = useState(playerDataJson as PlayerDataStructure);
+  const [playerData] = useState(playerDataJson as unknown as PlayerDataStructure);
 
   // Extract all players for autocomplete
   const players = useMemo(() => {
@@ -36,18 +36,55 @@ const PlayerStatsApp = () => {
     setSelectedPlayer(player);
     setSearchTerm(player.fullName);
     setShowDropdown(false);
+    
+    // Save selected player to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedPlayer', JSON.stringify(player));
+    }
   };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     if (!value) {
       setSelectedPlayer(null);
+      // Clear localStorage when search is cleared
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('selectedPlayer');
+      }
     }
   };
+
+  // Load selected player and stat from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPlayer = localStorage.getItem('selectedPlayer');
+      const savedStat = localStorage.getItem('selectedStat');
+      
+      if (savedPlayer) {
+        try {
+          const player = JSON.parse(savedPlayer);
+          setSelectedPlayer(player);
+          setSearchTerm(player.fullName);
+        } catch (error) {
+          console.error('Error loading saved player:', error);
+          localStorage.removeItem('selectedPlayer');
+        }
+      }
+      
+      if (savedStat) {
+        setSelectedStat(savedStat);
+      }
+    }
+  }, []);
 
   const handleStatSelect = (statKey: string) => {
     if (selectedStat !== statKey) {
       setSelectedStat(statKey);
+      
+      // Save selected stat to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedStat', statKey);
+      }
     }
   };
 
