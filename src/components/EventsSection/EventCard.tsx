@@ -32,6 +32,8 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
               )}
               {event.finish && (
                 <span className='force-black-text font-medium text-sm'>
+                  {Number(event.finish) === 1 && '🏆 '}
+                  {Number(event.finish) >= 2 && Number(event.finish) <= 8 && '🥉 '}
                   {formatFinish(event.finish)}
                 </span>
               )}
