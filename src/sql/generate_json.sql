@@ -78,263 +78,434 @@ player_stats AS (
   FROM player_events
   GROUP BY player_id, first_name, last_name
 ),
-ranked AS (
+-- Calculate individual rankings for each player on each stat
+player_rankings AS (
   SELECT 
     player_id,
-    first_name || ' ' || last_name AS player_full_name,
-    total_events AS events,
+    first_name,
+    last_name,
+    total_events,
     day2s,
     in_contentions,
     top8s,
     overall_wins,
     overall_losses,
     overall_draws,
+    limited_wins,
+    limited_losses,
+    limited_draws,
+    constructed_wins,
+    constructed_losses,
+    constructed_draws,
+    day1_wins,
+    day1_losses,
+    day1_draws,
+    day2_wins,
+    day2_losses,
+    day2_draws,
+    day3_wins,
+    day3_losses,
+    day3_draws,
+    drafts,
+    winning_drafts,
+    losing_drafts,
+    trophy_drafts,
+    streaks_5,
+    -- Calculate win percentages
     ROUND(
       CASE 
         WHEN (overall_wins + overall_losses + overall_draws) = 0 THEN 0
         ELSE overall_wins::numeric / (overall_wins + overall_losses + overall_draws) * 100
       END, 2
     ) AS overall_win_pct,
-    limited_wins,
-    limited_losses,
-    limited_draws,
     ROUND(
       CASE 
         WHEN (limited_wins + limited_losses + limited_draws) = 0 THEN 0
         ELSE limited_wins::numeric / (limited_wins + limited_losses + limited_draws) * 100
       END, 2
     ) AS limited_win_pct,
-    constructed_wins,
-    constructed_losses,
-    constructed_draws,
     ROUND(
       CASE 
         WHEN (constructed_wins + constructed_losses + constructed_draws) = 0 THEN 0
         ELSE constructed_wins::numeric / (constructed_wins + constructed_losses + constructed_draws) * 100
       END, 2
     ) AS constructed_win_pct,
-    day1_wins,
-    day1_losses,
-    day1_draws,
     ROUND(
       CASE 
         WHEN (day1_wins + day1_losses + day1_draws) = 0 THEN 0
         ELSE day1_wins::numeric / (day1_wins + day1_losses + day1_draws) * 100
       END, 2
     ) AS day1_win_pct,
-    day2_wins,
-    day2_losses,
-    day2_draws,
     ROUND(
       CASE 
         WHEN (day2_wins + day2_losses + day2_draws) = 0 THEN 0
         ELSE day2_wins::numeric / (day2_wins + day2_losses + day2_draws) * 100
       END, 2
     ) AS day2_win_pct,
-    day3_wins,
-    day3_losses,
-    day3_draws,
     ROUND(
       CASE 
         WHEN (day3_wins + day3_losses + day3_draws) = 0 THEN 0
         ELSE day3_wins::numeric / (day3_wins + day3_losses + day3_draws) * 100
       END, 2
     ) AS day3_win_pct,
-    drafts,
-    winning_drafts,
-    losing_drafts,
     ROUND(
       CASE 
         WHEN (winning_drafts + losing_drafts) = 0 THEN 0
         ELSE winning_drafts::numeric / (winning_drafts + losing_drafts) * 100
       END, 2
     ) AS winning_drafts_pct,
-    trophy_drafts,
-    streaks_5
+    -- Calculate rankings
+    ROW_NUMBER() OVER (ORDER BY total_events DESC) as events_rank,
+    ROW_NUMBER() OVER (ORDER BY day2s DESC) as day2s_rank,
+    ROW_NUMBER() OVER (ORDER BY in_contentions DESC) as in_contentions_rank,
+    ROW_NUMBER() OVER (ORDER BY top8s DESC) as top8s_rank,
+    ROW_NUMBER() OVER (ORDER BY overall_wins DESC) as overall_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY overall_losses DESC) as overall_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY overall_draws DESC) as overall_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY limited_wins DESC) as limited_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY limited_losses DESC) as limited_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY limited_draws DESC) as limited_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY constructed_wins DESC) as constructed_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY constructed_losses DESC) as constructed_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY constructed_draws DESC) as constructed_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY day1_wins DESC) as day1_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY day1_losses DESC) as day1_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY day1_draws DESC) as day1_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY day2_wins DESC) as day2_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY day2_losses DESC) as day2_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY day2_draws DESC) as day2_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY day3_wins DESC) as day3_wins_rank,
+    ROW_NUMBER() OVER (ORDER BY day3_losses DESC) as day3_losses_rank,
+    ROW_NUMBER() OVER (ORDER BY day3_draws DESC) as day3_draws_rank,
+    ROW_NUMBER() OVER (ORDER BY drafts DESC) as drafts_rank,
+    ROW_NUMBER() OVER (ORDER BY winning_drafts DESC) as winning_drafts_rank,
+    ROW_NUMBER() OVER (ORDER BY losing_drafts DESC) as losing_drafts_rank,
+    ROW_NUMBER() OVER (ORDER BY trophy_drafts DESC) as trophy_drafts_rank,
+    ROW_NUMBER() OVER (ORDER BY streaks_5 DESC) as streaks_5_rank
   FROM player_stats
 ),
+-- Add win percentage rankings
+player_rankings_with_pct AS (
+  SELECT 
+    *,
+    ROW_NUMBER() OVER (ORDER BY overall_win_pct DESC) as overall_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY limited_win_pct DESC) as limited_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY constructed_win_pct DESC) as constructed_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY day1_win_pct DESC) as day1_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY day2_win_pct DESC) as day2_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY day3_win_pct DESC) as day3_win_pct_rank,
+    ROW_NUMBER() OVER (ORDER BY winning_drafts_pct DESC) as winning_drafts_pct_rank
+  FROM player_rankings
+),
 
--- top 10 CTEs (one per stat)
+-- Keep your existing top 10 CTEs for the top_10 section
 top10_events AS (
   SELECT rank, player_full_name, events AS stat_value
-  FROM (SELECT player_full_name, events, ROW_NUMBER() OVER (ORDER BY events DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, total_events as events, ROW_NUMBER() OVER (ORDER BY total_events DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day2s AS (
   SELECT rank, player_full_name, day2s AS stat_value
-  FROM (SELECT player_full_name, day2s, ROW_NUMBER() OVER (ORDER BY day2s DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day2s, ROW_NUMBER() OVER (ORDER BY day2s DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_in_contentions AS (
   SELECT rank, player_full_name, in_contentions AS stat_value
-  FROM (SELECT player_full_name, in_contentions, ROW_NUMBER() OVER (ORDER BY in_contentions DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, in_contentions, ROW_NUMBER() OVER (ORDER BY in_contentions DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_top8s AS (
   SELECT rank, player_full_name, top8s AS stat_value
-  FROM (SELECT player_full_name, top8s, ROW_NUMBER() OVER (ORDER BY top8s DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, top8s, ROW_NUMBER() OVER (ORDER BY top8s DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_overall_wins AS (
   SELECT rank, player_full_name, overall_wins AS stat_value
-  FROM (SELECT player_full_name, overall_wins, ROW_NUMBER() OVER (ORDER BY overall_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, overall_wins, ROW_NUMBER() OVER (ORDER BY overall_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_overall_losses AS (
   SELECT rank, player_full_name, overall_losses AS stat_value
-  FROM (SELECT player_full_name, overall_losses, ROW_NUMBER() OVER (ORDER BY overall_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, overall_losses, ROW_NUMBER() OVER (ORDER BY overall_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_overall_draws AS (
   SELECT rank, player_full_name, overall_draws AS stat_value
-  FROM (SELECT player_full_name, overall_draws, ROW_NUMBER() OVER (ORDER BY overall_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, overall_draws, ROW_NUMBER() OVER (ORDER BY overall_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_overall_win_pct AS (
   SELECT rank, player_full_name, overall_win_pct AS stat_value
-  FROM (SELECT player_full_name, overall_win_pct, ROW_NUMBER() OVER (ORDER BY overall_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name, 
+      ROUND(
+        CASE 
+          WHEN (overall_wins + overall_losses + overall_draws) = 0 THEN 0
+          ELSE overall_wins::numeric / (overall_wins + overall_losses + overall_draws) * 100
+        END, 2
+      ) as overall_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (overall_wins + overall_losses + overall_draws) = 0 THEN 0
+            ELSE overall_wins::numeric / (overall_wins + overall_losses + overall_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
+-- Continue with remaining top10 CTEs...
 top10_limited_wins AS (
   SELECT rank, player_full_name, limited_wins AS stat_value
-  FROM (SELECT player_full_name, limited_wins, ROW_NUMBER() OVER (ORDER BY limited_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, limited_wins, ROW_NUMBER() OVER (ORDER BY limited_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_limited_losses AS (
   SELECT rank, player_full_name, limited_losses AS stat_value
-  FROM (SELECT player_full_name, limited_losses, ROW_NUMBER() OVER (ORDER BY limited_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, limited_losses, ROW_NUMBER() OVER (ORDER BY limited_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_limited_draws AS (
   SELECT rank, player_full_name, limited_draws AS stat_value
-  FROM (SELECT player_full_name, limited_draws, ROW_NUMBER() OVER (ORDER BY limited_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, limited_draws, ROW_NUMBER() OVER (ORDER BY limited_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_limited_win_pct AS (
   SELECT rank, player_full_name, limited_win_pct AS stat_value
-  FROM (SELECT player_full_name, limited_win_pct, ROW_NUMBER() OVER (ORDER BY limited_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (limited_wins + limited_losses + limited_draws) = 0 THEN 0
+          ELSE limited_wins::numeric / (limited_wins + limited_losses + limited_draws) * 100
+        END, 2
+      ) as limited_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (limited_wins + limited_losses + limited_draws) = 0 THEN 0
+            ELSE limited_wins::numeric / (limited_wins + limited_losses + limited_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_constructed_wins AS (
   SELECT rank, player_full_name, constructed_wins AS stat_value
-  FROM (SELECT player_full_name, constructed_wins, ROW_NUMBER() OVER (ORDER BY constructed_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, constructed_wins, ROW_NUMBER() OVER (ORDER BY constructed_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_constructed_losses AS (
   SELECT rank, player_full_name, constructed_losses AS stat_value
-  FROM (SELECT player_full_name, constructed_losses, ROW_NUMBER() OVER (ORDER BY constructed_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, constructed_losses, ROW_NUMBER() OVER (ORDER BY constructed_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_constructed_draws AS (
   SELECT rank, player_full_name, constructed_draws AS stat_value
-  FROM (SELECT player_full_name, constructed_draws, ROW_NUMBER() OVER (ORDER BY constructed_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, constructed_draws, ROW_NUMBER() OVER (ORDER BY constructed_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_constructed_win_pct AS (
   SELECT rank, player_full_name, constructed_win_pct AS stat_value
-  FROM (SELECT player_full_name, constructed_win_pct, ROW_NUMBER() OVER (ORDER BY constructed_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (constructed_wins + constructed_losses + constructed_draws) = 0 THEN 0
+          ELSE constructed_wins::numeric / (constructed_wins + constructed_losses + constructed_draws) * 100
+        END, 2
+      ) as constructed_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (constructed_wins + constructed_losses + constructed_draws) = 0 THEN 0
+            ELSE constructed_wins::numeric / (constructed_wins + constructed_losses + constructed_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_day1_wins AS (
   SELECT rank, player_full_name, day1_wins AS stat_value
-  FROM (SELECT player_full_name, day1_wins, ROW_NUMBER() OVER (ORDER BY day1_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day1_wins, ROW_NUMBER() OVER (ORDER BY day1_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day1_losses AS (
   SELECT rank, player_full_name, day1_losses AS stat_value
-  FROM (SELECT player_full_name, day1_losses, ROW_NUMBER() OVER (ORDER BY day1_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day1_losses, ROW_NUMBER() OVER (ORDER BY day1_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day1_draws AS (
   SELECT rank, player_full_name, day1_draws AS stat_value
-  FROM (SELECT player_full_name, day1_draws, ROW_NUMBER() OVER (ORDER BY day1_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day1_draws, ROW_NUMBER() OVER (ORDER BY day1_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day1_win_pct AS (
   SELECT rank, player_full_name, day1_win_pct AS stat_value
-  FROM (SELECT player_full_name, day1_win_pct, ROW_NUMBER() OVER (ORDER BY day1_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (day1_wins + day1_losses + day1_draws) = 0 THEN 0
+          ELSE day1_wins::numeric / (day1_wins + day1_losses + day1_draws) * 100
+        END, 2
+      ) as day1_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (day1_wins + day1_losses + day1_draws) = 0 THEN 0
+            ELSE day1_wins::numeric / (day1_wins + day1_losses + day1_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_day2_wins AS (
   SELECT rank, player_full_name, day2_wins AS stat_value
-  FROM (SELECT player_full_name, day2_wins, ROW_NUMBER() OVER (ORDER BY day2_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day2_wins, ROW_NUMBER() OVER (ORDER BY day2_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day2_losses AS (
   SELECT rank, player_full_name, day2_losses AS stat_value
-  FROM (SELECT player_full_name, day2_losses, ROW_NUMBER() OVER (ORDER BY day2_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day2_losses, ROW_NUMBER() OVER (ORDER BY day2_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day2_draws AS (
   SELECT rank, player_full_name, day2_draws AS stat_value
-  FROM (SELECT player_full_name, day2_draws, ROW_NUMBER() OVER (ORDER BY day2_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day2_draws, ROW_NUMBER() OVER (ORDER BY day2_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day2_win_pct AS (
   SELECT rank, player_full_name, day2_win_pct AS stat_value
-  FROM (SELECT player_full_name, day2_win_pct, ROW_NUMBER() OVER (ORDER BY day2_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (day2_wins + day2_losses + day2_draws) = 0 THEN 0
+          ELSE day2_wins::numeric / (day2_wins + day2_losses + day2_draws) * 100
+        END, 2
+      ) as day2_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (day2_wins + day2_losses + day2_draws) = 0 THEN 0
+            ELSE day2_wins::numeric / (day2_wins + day2_losses + day2_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_day3_wins AS (
   SELECT rank, player_full_name, day3_wins AS stat_value
-  FROM (SELECT player_full_name, day3_wins, ROW_NUMBER() OVER (ORDER BY day3_wins DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day3_wins, ROW_NUMBER() OVER (ORDER BY day3_wins DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day3_losses AS (
   SELECT rank, player_full_name, day3_losses AS stat_value
-  FROM (SELECT player_full_name, day3_losses, ROW_NUMBER() OVER (ORDER BY day3_losses DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day3_losses, ROW_NUMBER() OVER (ORDER BY day3_losses DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day3_draws AS (
   SELECT rank, player_full_name, day3_draws AS stat_value
-  FROM (SELECT player_full_name, day3_draws, ROW_NUMBER() OVER (ORDER BY day3_draws DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, day3_draws, ROW_NUMBER() OVER (ORDER BY day3_draws DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_day3_win_pct AS (
   SELECT rank, player_full_name, day3_win_pct AS stat_value
-  FROM (SELECT player_full_name, day3_win_pct, ROW_NUMBER() OVER (ORDER BY day3_win_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (day3_wins + day3_losses + day3_draws) = 0 THEN 0
+          ELSE day3_wins::numeric / (day3_wins + day3_losses + day3_draws) * 100
+        END, 2
+      ) as day3_win_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (day3_wins + day3_losses + day3_draws) = 0 THEN 0
+            ELSE day3_wins::numeric / (day3_wins + day3_losses + day3_draws) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_drafts AS (
   SELECT rank, player_full_name, drafts AS stat_value
-  FROM (SELECT player_full_name, drafts, ROW_NUMBER() OVER (ORDER BY drafts DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, drafts, ROW_NUMBER() OVER (ORDER BY drafts DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_winning_drafts AS (
   SELECT rank, player_full_name, winning_drafts AS stat_value
-  FROM (SELECT player_full_name, winning_drafts, ROW_NUMBER() OVER (ORDER BY winning_drafts DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, winning_drafts, ROW_NUMBER() OVER (ORDER BY winning_drafts DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_losing_drafts AS (
   SELECT rank, player_full_name, losing_drafts AS stat_value
-  FROM (SELECT player_full_name, losing_drafts, ROW_NUMBER() OVER (ORDER BY losing_drafts DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, losing_drafts, ROW_NUMBER() OVER (ORDER BY losing_drafts DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_winning_drafts_pct AS (
   SELECT rank, player_full_name, winning_drafts_pct AS stat_value
-  FROM (SELECT player_full_name, winning_drafts_pct, ROW_NUMBER() OVER (ORDER BY winning_drafts_pct DESC) as rank FROM ranked) t
+  FROM (
+    SELECT 
+      first_name || ' ' || last_name as player_full_name,
+      ROUND(
+        CASE 
+          WHEN (winning_drafts + losing_drafts) = 0 THEN 0
+          ELSE winning_drafts::numeric / (winning_drafts + losing_drafts) * 100
+        END, 2
+      ) as winning_drafts_pct,
+      ROW_NUMBER() OVER (ORDER BY 
+        ROUND(
+          CASE 
+            WHEN (winning_drafts + losing_drafts) = 0 THEN 0
+            ELSE winning_drafts::numeric / (winning_drafts + losing_drafts) * 100
+          END, 2
+        ) DESC
+      ) as rank 
+    FROM player_stats
+  ) t
   WHERE rank <= 10
 ),
 top10_trophy_drafts AS (
   SELECT rank, player_full_name, trophy_drafts AS stat_value
-  FROM (SELECT player_full_name, trophy_drafts, ROW_NUMBER() OVER (ORDER BY trophy_drafts DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, trophy_drafts, ROW_NUMBER() OVER (ORDER BY trophy_drafts DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 ),
 top10_5streaks AS (
   SELECT rank, player_full_name, streaks_5 AS stat_value
-  FROM (SELECT player_full_name, streaks_5, ROW_NUMBER() OVER (ORDER BY streaks_5 DESC) as rank FROM ranked) t
+  FROM (SELECT first_name || ' ' || last_name as player_full_name, streaks_5, ROW_NUMBER() OVER (ORDER BY streaks_5 DESC) as rank FROM player_stats) t
   WHERE rank <= 10
 )
 
 SELECT json_build_object(
   'players', (
     SELECT json_object_agg(
-      'entry_' || ps.player_id,
+      'entry_' || pr.player_id,
       json_build_object(
-        'player', json_build_object(
-          'first_name', ps.first_name,
-          'last_name', ps.last_name,
-          'full_name', ps.first_name || ' ' || ps.last_name
+        'player_info', json_build_object(
+          'first_name', pr.first_name,
+          'last_name', pr.last_name,
+          'full_name', pr.first_name || ' ' || pr.last_name
         ),
         'events', (
           SELECT json_object_agg(
@@ -350,88 +521,51 @@ SELECT json_build_object(
             )
           )
           FROM player_events pe
-          WHERE pe.player_id = ps.player_id
+          WHERE pe.player_id = pr.player_id
         ),
         'stats', json_build_object(
-          'events', ps.total_events,
-          'day2s', ps.day2s,
-          'in_contentions', ps.in_contentions,
-          'top8s', ps.top8s,
-          'overall_wins', ps.overall_wins,
-          'overall_losses', ps.overall_losses,
-          'overall_draws', ps.overall_draws,
-          'overall_record', ps.overall_wins || '-' || ps.overall_losses || '-' || ps.overall_draws,
-          'overall_win_pct', ROUND(
-            CASE 
-              WHEN (ps.overall_wins + ps.overall_losses + ps.overall_draws) = 0 THEN 0 
-              ELSE ps.overall_wins::numeric / (ps.overall_wins + ps.overall_losses + ps.overall_draws) * 100 
-            END, 2
-          ),
-          'limited_wins', ps.limited_wins,
-          'limited_losses', ps.limited_losses,
-          'limited_draws', ps.limited_draws,
-          'limited_record', ps.limited_wins || '-' || ps.limited_losses || '-' || ps.limited_draws,
-          'limited_win_pct', ROUND(
-            CASE 
-              WHEN (ps.limited_wins + ps.limited_losses + ps.limited_draws) = 0 THEN 0 
-              ELSE ps.limited_wins::numeric / (ps.limited_wins + ps.limited_losses + ps.limited_draws) * 100 
-            END, 2
-          ),
-          'constructed_wins', ps.constructed_wins,
-          'constructed_losses', ps.constructed_losses,
-          'constructed_draws', ps.constructed_draws,
-          'constructed_record', ps.constructed_wins || '-' || ps.constructed_losses || '-' || ps.constructed_draws,
-          'constructed_win_pct', ROUND(
-            CASE 
-              WHEN (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) = 0 THEN 0 
-              ELSE ps.constructed_wins::numeric / (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) * 100 
-            END, 2
-          ),
-          'day1_wins', ps.day1_wins,
-          'day1_losses', ps.day1_losses,
-          'day1_draws', ps.day1_draws,
-          'day1_win_pct', ROUND(
-            CASE 
-              WHEN (ps.day1_wins + ps.day1_losses + ps.day1_draws) = 0 THEN 0 
-              ELSE ps.day1_wins::numeric / (ps.day1_wins + ps.day1_losses + ps.day1_draws) * 100 
-            END, 2
-          ),
-          'day2_wins', ps.day2_wins,
-          'day2_losses', ps.day2_losses,
-          'day2_draws', ps.day2_draws,
-          'day2_win_pct', ROUND(
-            CASE 
-              WHEN (ps.day2_wins + ps.day2_losses + ps.day2_draws) = 0 THEN 0 
-              ELSE ps.day2_wins::numeric / (ps.day2_wins + ps.day2_losses + ps.day2_draws) * 100 
-            END, 2
-          ),
-          'day3_wins', ps.day3_wins,
-          'day3_losses', ps.day3_losses,
-          'day3_draws', ps.day3_draws,
-          'day3_win_pct', ROUND(
-            CASE 
-              WHEN (ps.day3_wins + ps.day3_losses + ps.day3_draws) = 0 THEN 0 
-              ELSE ps.day3_wins::numeric / (ps.day3_wins + ps.day3_losses + ps.day3_draws) * 100 
-            END, 2
-          ),
-          'top8_record', ps.day3_wins || '-' || ps.day3_losses || '-' || ps.day3_draws,
-          'drafts', ps.drafts,
-          'winning_drafts', ps.winning_drafts,
-          'losing_drafts', ps.losing_drafts,
-          'winning_drafts_pct', ROUND(
-            CASE 
-              WHEN (ps.winning_drafts + ps.losing_drafts) = 0 THEN 0 
-              ELSE ps.winning_drafts::numeric / (ps.winning_drafts + ps.losing_drafts) * 100 
-            END, 2
-          ),
-          'trophy_drafts', ps.trophy_drafts,
-          'longest_win_streak', null,
-          '5streaks', ps.streaks_5,
-          'longest_loss_streak', null
+          'events', json_build_object('value', pr.total_events, 'rank', pr.events_rank),
+          'day2s', json_build_object('value', pr.day2s, 'rank', pr.day2s_rank),
+          'in_contentions', json_build_object('value', pr.in_contentions, 'rank', pr.in_contentions_rank),
+          'top8s', json_build_object('value', pr.top8s, 'rank', pr.top8s_rank),
+          'overall_wins', json_build_object('value', pr.overall_wins, 'rank', pr.overall_wins_rank),
+          'overall_losses', json_build_object('value', pr.overall_losses, 'rank', pr.overall_losses_rank),
+          'overall_draws', json_build_object('value', pr.overall_draws, 'rank', pr.overall_draws_rank),
+          'overall_record', json_build_object('value', pr.overall_wins || '-' || pr.overall_losses || '-' || pr.overall_draws, 'rank', null),
+          'overall_win_pct', json_build_object('value', pr.overall_win_pct, 'rank', pr.overall_win_pct_rank),
+          'limited_wins', json_build_object('value', pr.limited_wins, 'rank', pr.limited_wins_rank),
+          'limited_losses', json_build_object('value', pr.limited_losses, 'rank', pr.limited_losses_rank),
+          'limited_draws', json_build_object('value', pr.limited_draws, 'rank', pr.limited_draws_rank),
+          'limited_record', json_build_object('value', pr.limited_wins || '-' || pr.limited_losses || '-' || pr.limited_draws, 'rank', null),
+          'limited_win_pct', json_build_object('value', pr.limited_win_pct, 'rank', pr.limited_win_pct_rank),
+          'constructed_wins', json_build_object('value', pr.constructed_wins, 'rank', pr.constructed_wins_rank),
+          'constructed_losses', json_build_object('value', pr.constructed_losses, 'rank', pr.constructed_losses_rank),
+          'constructed_draws', json_build_object('value', pr.constructed_draws, 'rank', pr.constructed_draws_rank),
+          'constructed_record', json_build_object('value', pr.constructed_wins || '-' || pr.constructed_losses || '-' || pr.constructed_draws, 'rank', null),
+          'constructed_win_pct', json_build_object('value', pr.constructed_win_pct, 'rank', pr.constructed_win_pct_rank),
+          'day1_wins', json_build_object('value', pr.day1_wins, 'rank', pr.day1_wins_rank),
+          'day1_losses', json_build_object('value', pr.day1_losses, 'rank', pr.day1_losses_rank),
+          'day1_draws', json_build_object('value', pr.day1_draws, 'rank', pr.day1_draws_rank),
+          'day1_win_pct', json_build_object('value', pr.day1_win_pct, 'rank', pr.day1_win_pct_rank),
+          'day2_wins', json_build_object('value', pr.day2_wins, 'rank', pr.day2_wins_rank),
+          'day2_losses', json_build_object('value', pr.day2_losses, 'rank', pr.day2_losses_rank),
+          'day2_draws', json_build_object('value', pr.day2_draws, 'rank', pr.day2_draws_rank),
+          'day2_win_pct', json_build_object('value', pr.day2_win_pct, 'rank', pr.day2_win_pct_rank),
+          'day3_wins', json_build_object('value', pr.day3_wins, 'rank', pr.day3_wins_rank),
+          'day3_losses', json_build_object('value', pr.day3_losses, 'rank', pr.day3_losses_rank),
+          'day3_draws', json_build_object('value', pr.day3_draws, 'rank', pr.day3_draws_rank),
+          'day3_win_pct', json_build_object('value', pr.day3_win_pct, 'rank', pr.day3_win_pct_rank),
+          'top8_record', json_build_object('value', pr.day3_wins || '-' || pr.day3_losses || '-' || pr.day3_draws, 'rank', null),
+          'drafts', json_build_object('value', pr.drafts, 'rank', pr.drafts_rank),
+          'winning_drafts', json_build_object('value', pr.winning_drafts, 'rank', pr.winning_drafts_rank),
+          'losing_drafts', json_build_object('value', pr.losing_drafts, 'rank', pr.losing_drafts_rank),
+          'winning_drafts_pct', json_build_object('value', pr.winning_drafts_pct, 'rank', pr.winning_drafts_pct_rank),
+          'trophy_drafts', json_build_object('value', pr.trophy_drafts, 'rank', pr.trophy_drafts_rank),
+          '5streaks', json_build_object('value', pr.streaks_5, 'rank', pr.streaks_5_rank)
         )
       )
     )
-    FROM player_stats ps
+    FROM player_rankings_with_pct pr
   ),
   'top_10', json_build_object(
     'events', (SELECT json_object_agg(rank::text, json_build_object('rank', rank, 'player_full_name', player_full_name, 'stat_value', stat_value)) FROM top10_events),

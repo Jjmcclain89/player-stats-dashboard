@@ -13,11 +13,13 @@ const PlayerStatsApp = () => {
 
     // Extract all players for autocomplete
     const players = useMemo(() => {
-        return Object.entries(playerData.players).map(([key, data]: [string, any]) => ({
-            id: key,
-            fullName: data.player.full_name,
-            data: data,
-        }));
+        return Object.entries(playerData.players).map(
+            ([key, data]: [string, any]) => ({
+                id: key,
+                fullName: data.player_info.full_name,
+                data: data,
+            })
+        );
     }, [playerData]);
 
     // Filter players based on search term
@@ -35,8 +37,18 @@ const PlayerStatsApp = () => {
         try {
             const date = new Date(dateString);
             const months = [
-                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
             ];
 
             const month = months[date.getMonth()];
@@ -76,40 +88,44 @@ const PlayerStatsApp = () => {
     // Get display name for stat
     const getStatDisplayName = (statKey: string) => {
         const displayNames: { [key: string]: string } = {
-            'events': 'Total Events',
-            'day2s': 'Day 2s',
-            'in_contentions': 'In Contentions',
-            'top8s': 'Top 8s',
-            'overall_wins': 'Overall Wins',
-            'overall_losses': 'Overall Losses',
-            'overall_draws': 'Overall Draws',
-            'overall_win_pct': 'Overall Win %',
-            'limited_wins': 'Limited Wins',
-            'limited_losses': 'Limited Losses',
-            'limited_draws': 'Limited Draws',
-            'limited_win_pct': 'Limited Win %',
-            'constructed_wins': 'Constructed Wins',
-            'constructed_losses': 'Constructed Losses',
-            'constructed_draws': 'Constructed Draws',
-            'constructed_win_pct': 'Constructed Win %',
-            'day1_wins': 'Day 1 Wins',
-            'day1_losses': 'Day 1 Losses',
-            'day1_draws': 'Day 1 Draws',
-            'day1_win_pct': 'Day 1 Win %',
-            'day2_wins': 'Day 2 Wins',
-            'day2_losses': 'Day 2 Losses',
-            'day2_draws': 'Day 2 Draws',
-            'day2_win_pct': 'Day 2 Win %',
-            'day3_wins': 'Day 3 Wins',
-            'day3_losses': 'Day 3 Losses',
-            'day3_draws': 'Day 3 Draws',
-            'day3_win_pct': 'Day 3 Win %',
-            'drafts': 'Total Drafts',
-            'winning_drafts': 'Winning Drafts',
-            'losing_drafts': 'Losing Drafts',
-            'winning_drafts_pct': 'Winning Drafts %',
-            'trophy_drafts': 'Trophy Drafts',
-            '5streaks': '5+ Win Streaks'
+            events: 'Total Events',
+            day2s: 'Day 2s',
+            in_contentions: 'In Contentions',
+            top8s: 'Top 8s',
+            overall_wins: 'Overall Wins',
+            overall_losses: 'Overall Losses',
+            overall_draws: 'Overall Draws',
+            overall_win_pct: 'Overall Win %',
+            limited_wins: 'Limited Wins',
+            limited_losses: 'Limited Losses',
+            limited_draws: 'Limited Draws',
+            limited_win_pct: 'Limited Win %',
+            constructed_wins: 'Constructed Wins',
+            constructed_losses: 'Constructed Losses',
+            constructed_draws: 'Constructed Draws',
+            constructed_win_pct: 'Constructed Win %',
+            day1_wins: 'Day 1 Wins',
+            day1_losses: 'Day 1 Losses',
+            day1_draws: 'Day 1 Draws',
+            day1_win_pct: 'Day 1 Win %',
+            day2_wins: 'Day 2 Wins',
+            day2_losses: 'Day 2 Losses',
+            day2_draws: 'Day 2 Draws',
+            day2_win_pct: 'Day 2 Win %',
+            day3_wins: 'Day 3 Wins',
+            day3_losses: 'Day 3 Losses',
+            day3_draws: 'Day 3 Draws',
+            day3_win_pct: 'Day 3 Win %',
+            drafts: 'Total Drafts',
+            winning_drafts: 'Winning Drafts',
+            losing_drafts: 'Losing Drafts',
+            winning_drafts_pct: 'Winning Drafts %',
+            trophy_drafts: 'Trophy Drafts',
+            '5streaks': '5+ Win Streaks',
+            overall_record: 'Overall Record',
+            limited_record: 'Limited Record',
+            constructed_record: 'Constructed Record',
+            top8_record: 'Top 8 Record',
         };
         return displayNames[statKey] || statKey;
     };
@@ -122,9 +138,11 @@ const PlayerStatsApp = () => {
         stat2?: { label: string; value: any; key: string };
     }) => (
         <tr className='hover:bg-gray-50'>
-            <td 
+            <td
                 className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
-                    selectedStat === stat1.key ? 'bg-blue-100 force-blue-text' : 'force-black-text hover:bg-blue-50'
+                    selectedStat === stat1.key
+                        ? 'bg-blue-100 force-blue-text'
+                        : 'force-black-text hover:bg-blue-50'
                 }`}
                 onClick={() => handleStatSelect(stat1.key)}
             >
@@ -135,9 +153,11 @@ const PlayerStatsApp = () => {
             </td>
             {stat2 ? (
                 <>
-                    <td 
+                    <td
                         className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
-                            selectedStat === stat2.key ? 'bg-blue-100 force-blue-text' : 'force-black-text hover:bg-blue-50'
+                            selectedStat === stat2.key
+                                ? 'bg-blue-100 force-blue-text'
+                                : 'force-black-text hover:bg-blue-50'
                         }`}
                         onClick={() => handleStatSelect(stat2.key)}
                     >
@@ -207,35 +227,67 @@ const PlayerStatsApp = () => {
         const top10Data = (playerData.top_10 as any)[selectedStat];
         const rankings = Object.values(top10Data) as any[];
 
+        // Get the selected player's rank for this stat
+        const playerRank = selectedPlayer?.data?.stats?.[selectedStat]?.rank;
+        const playerStatValue =
+            selectedPlayer?.data?.stats?.[selectedStat]?.value;
+
         return (
             <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
                 <h3 className='text-lg font-bold mb-4 force-black-text'>
                     Top 10: {getStatDisplayName(selectedStat)}
                 </h3>
-                <div className='space-y-2'>
+                <div className='space-y-1'>
                     {rankings.map((entry: any) => (
-                        <div 
-                            key={entry.rank} 
-                            className='flex justify-between items-center py-2 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
+                        <div
+                            key={entry.rank}
+                            className='flex justify-between items-center py-1 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
                         >
-                            <div className='flex items-center gap-3'>
-                                <span className='font-bold text-gray-600 w-6'>
+                            <div className='flex items-center gap-2'>
+                                <span className='font-bold text-gray-600 w-6 text-sm'>
                                     #{entry.rank}
                                 </span>
-                                <span className='force-black-text font-medium'>
+                                <span className='force-black-text font-medium text-sm'>
                                     {entry.player_full_name}
                                 </span>
                             </div>
-                            <span className='force-black-text font-bold'>
-                                {selectedStat.includes('pct') ? `${entry.stat_value}%` : entry.stat_value}
+                            <span className='force-black-text font-bold text-sm'>
+                                {selectedStat.includes('pct')
+                                    ? `${entry.stat_value}%`
+                                    : entry.stat_value}
                             </span>
                         </div>
                     ))}
                 </div>
+
+                {/* Player Personal Rank Section */}
+                {selectedPlayer && playerRank && (
+                    <>
+                        <div className='border-t border-gray-200 my-4'></div>
+                        <div className='bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded'>
+                            <div className='flex justify-between items-center'>
+                                <div className='flex items-center gap-4'>
+                                    <span className='font-bold text-yellow-700 w-6 text-sm pr-5'>
+                                        #{playerRank}
+                                    </span>
+                                    <span className='force-black-text font-medium text-sm'>
+                                        {selectedPlayer.fullName} (You)
+                                    </span>
+                                </div>
+                                <span className='force-black-text font-bold text-sm'>
+                                    {selectedStat.includes('pct')
+                                        ? `${playerStatValue}%`
+                                        : playerStatValue}
+                                </span>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         );
     };
-
+    
+    // HTML Render
     return (
         <div className='min-h-screen bg-gray-50 p-6'>
             <style
@@ -276,7 +328,9 @@ const PlayerStatsApp = () => {
                                 {filteredPlayers.map((player) => (
                                     <div
                                         key={player.id}
-                                        onClick={() => handlePlayerSelect(player)}
+                                        onClick={() =>
+                                            handlePlayerSelect(player)
+                                        }
                                         className='px-4 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 force-black-text'
                                     >
                                         {player.fullName}
@@ -304,123 +358,150 @@ const PlayerStatsApp = () => {
                                             <StatRow
                                                 stat1={{
                                                     label: 'Total Events',
-                                                    value: selectedPlayer.data.stats.events,
-                                                    key: 'events'
+                                                    value: selectedPlayer.data
+                                                        .stats.events.value,
+                                                    key: 'events',
                                                 }}
                                                 stat2={{
                                                     label: 'Day 2s',
-                                                    value: selectedPlayer.data.stats.day2s,
-                                                    key: 'day2s'
+                                                    value: selectedPlayer.data
+                                                        .stats.day2s.value,
+                                                    key: 'day2s',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'In Contentions',
-                                                    value: selectedPlayer.data.stats.in_contentions,
-                                                    key: 'in_contentions'
+                                                    value: selectedPlayer.data
+                                                        .stats.in_contentions
+                                                        .value,
+                                                    key: 'in_contentions',
                                                 }}
                                                 stat2={{
                                                     label: 'Top 8s',
-                                                    value: selectedPlayer.data.stats.top8s,
-                                                    key: 'top8s'
+                                                    value: selectedPlayer.data
+                                                        .stats.top8s.value,
+                                                    key: 'top8s',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Overall Record',
-                                                    value: selectedPlayer.data.stats.overall_record,
-                                                    key: 'overall_record'
+                                                    value: selectedPlayer.data
+                                                        .stats.overall_record
+                                                        .value,
+                                                    key: 'overall_record',
                                                 }}
                                                 stat2={{
                                                     label: 'Overall Win %',
-                                                    value: `${selectedPlayer.data.stats.overall_win_pct}%`,
-                                                    key: 'overall_win_pct'
+                                                    value: `${selectedPlayer.data.stats.overall_win_pct.value}%`,
+                                                    key: 'overall_win_pct',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Limited Record',
-                                                    value: selectedPlayer.data.stats.limited_record,
-                                                    key: 'limited_record'
+                                                    value: selectedPlayer.data
+                                                        .stats.limited_record
+                                                        .value,
+                                                    key: 'limited_record',
                                                 }}
                                                 stat2={{
                                                     label: 'Limited Win %',
-                                                    value: `${selectedPlayer.data.stats.limited_win_pct}%`,
-                                                    key: 'limited_win_pct'
+                                                    value: `${selectedPlayer.data.stats.limited_win_pct.value}%`,
+                                                    key: 'limited_win_pct',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Constructed Record',
-                                                    value: selectedPlayer.data.stats.constructed_record,
-                                                    key: 'constructed_record'
+                                                    value: selectedPlayer.data
+                                                        .stats
+                                                        .constructed_record
+                                                        .value,
+                                                    key: 'constructed_record',
                                                 }}
                                                 stat2={{
                                                     label: 'Constructed Win %',
-                                                    value: `${selectedPlayer.data.stats.constructed_win_pct}%`,
-                                                    key: 'constructed_win_pct'
+                                                    value: `${selectedPlayer.data.stats.constructed_win_pct.value}%`,
+                                                    key: 'constructed_win_pct',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Day 1 Win %',
-                                                    value: `${selectedPlayer.data.stats.day1_win_pct}%`,
-                                                    key: 'day1_win_pct'
+                                                    value: `${selectedPlayer.data.stats.day1_win_pct.value}%`,
+                                                    key: 'day1_win_pct',
                                                 }}
                                                 stat2={{
                                                     label: 'Day 2 Win %',
-                                                    value: `${selectedPlayer.data.stats.day2_win_pct}%`,
-                                                    key: 'day2_win_pct'
+                                                    value: `${selectedPlayer.data.stats.day2_win_pct.value}%`,
+                                                    key: 'day2_win_pct',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Day 3 Win %',
-                                                    value: `${selectedPlayer.data.stats.day3_win_pct}%`,
-                                                    key: 'day3_win_pct'
+                                                    value: `${selectedPlayer.data.stats.day3_win_pct.value}%`,
+                                                    key: 'day3_win_pct',
                                                 }}
                                                 stat2={{
                                                     label: 'Top 8 Record',
-                                                    value: selectedPlayer.data.stats.top8_record,
-                                                    key: 'top8_record'
+                                                    value: selectedPlayer.data
+                                                        .stats.top8_record
+                                                        .value,
+                                                    key: 'top8_record',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Total Drafts',
-                                                    value: selectedPlayer.data.stats.drafts,
-                                                    key: 'drafts'
+                                                    value: selectedPlayer.data
+                                                        .stats.drafts.value,
+                                                    key: 'drafts',
                                                 }}
                                                 stat2={{
                                                     label: 'Winning Drafts %',
-                                                    value: `${selectedPlayer.data.stats.winning_drafts_pct}%`,
-                                                    key: 'winning_drafts_pct'
+                                                    value: `${selectedPlayer.data.stats.winning_drafts_pct.value}%`,
+                                                    key: 'winning_drafts_pct',
                                                 }}
                                             />
                                             <StatRow
                                                 stat1={{
                                                     label: 'Trophy Drafts',
-                                                    value: selectedPlayer.data.stats.trophy_drafts,
-                                                    key: 'trophy_drafts'
+                                                    value: selectedPlayer.data
+                                                        .stats.trophy_drafts
+                                                        .value,
+                                                    key: 'trophy_drafts',
                                                 }}
                                                 stat2={{
                                                     label: '5+ Win Streaks',
-                                                    value: selectedPlayer.data.stats['5streaks'],
-                                                    key: '5streaks'
+                                                    value: selectedPlayer.data
+                                                        .stats['5streaks']
+                                                        .value,
+                                                    key: '5streaks',
                                                 }}
                                             />
-                                            <StatRow
+                                            {/* <StatRow
                                                 stat1={{
                                                     label: 'Longest Win Streak',
-                                                    value: selectedPlayer.data.stats.longest_win_streak || 'N/A',
-                                                    key: 'longest_win_streak'
+                                                    value:
+                                                        selectedPlayer.data
+                                                            .stats
+                                                            .longest_win_streak
+                                                            .value || 'N/A',
+                                                    key: 'longest_win_streak',
                                                 }}
                                                 stat2={{
                                                     label: 'Longest Loss Streak',
-                                                    value: selectedPlayer.data.stats.longest_loss_streak || 'N/A',
-                                                    key: 'longest_loss_streak'
+                                                    value:
+                                                        selectedPlayer.data
+                                                            .stats
+                                                            .longest_loss_streak
+                                                            .value || 'N/A',
+                                                    key: 'longest_loss_streak',
                                                 }}
-                                            />
+                                            /> */}
                                         </tbody>
                                     </table>
                                 </div>
@@ -460,8 +541,13 @@ const PlayerStatsApp = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values(selectedPlayer.data.events).map((event: any, index: number) => (
-                                            <EventRow key={index} event={event} />
+                                        {Object.values(
+                                            selectedPlayer.data.events
+                                        ).map((event: any, index: number) => (
+                                            <EventRow
+                                                key={index}
+                                                event={event}
+                                            />
                                         ))}
                                     </tbody>
                                 </table>
