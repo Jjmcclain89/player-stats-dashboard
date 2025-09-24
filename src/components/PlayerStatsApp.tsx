@@ -78,7 +78,7 @@ const PlayerStatsApp = () => {
         const num = parseInt(finish.toString());
         if (isNaN(num)) return finish.toString();
 
-        const suffix = (num) => {
+        const suffix = (num: number) => {
             const lastDigit = num % 10;
             const lastTwoDigits = num % 100;
 
