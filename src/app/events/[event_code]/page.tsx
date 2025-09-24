@@ -124,7 +124,8 @@ const EventPageClient = () => {
           {eventDetails.eventCode} - Event Results
         </h1>
         
-        <div className='bg-white rounded-lg shadow-md p-6 mb-6'>
+        {/* Combined Results Section */}
+        <div className='bg-white rounded-lg shadow-md p-6'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
             <div>
               <p className='text-sm text-gray-500'>Format</p>
@@ -139,14 +140,7 @@ const EventPageClient = () => {
               <p className='text-lg font-semibold force-black-text'>{eventDetails.totalPlayers}</p>
             </div>
           </div>
-          
-          <p className='text-gray-600'>
-            Final standings and deck information for {eventDetails.eventCode}
-          </p>
-        </div>
 
-        {/* Results Table */}
-        <div className='bg-white rounded-lg shadow-md p-6'>
           <h2 className='text-xl font-bold mb-6 force-black-text'>
             Final Standings
           </h2>
