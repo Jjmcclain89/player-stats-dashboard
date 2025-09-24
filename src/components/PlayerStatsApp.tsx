@@ -36,20 +36,7 @@ const PlayerStatsApp = () => {
 
         try {
             const date = new Date(dateString);
-            const months = [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun',
-                'Jul',
-                'Aug',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dec',
-            ];
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
             const month = months[date.getMonth()];
             const day = date.getDate();
@@ -64,7 +51,12 @@ const PlayerStatsApp = () => {
     // Format abbreviation function
     const abbreviateFormat = (format: string) => {
         if (!format) return '-';
-        return format.charAt(0).toUpperCase();
+        const formatMap: { [key: string]: string } = {
+            "Standard": "STD",
+            "Modern": "MOD",
+            "Pioneer": "PIO",
+        };
+        return formatMap[format] || format.substring(0, 3).toUpperCase();
     };
 
     const handlePlayerSelect = (player: any) => {
@@ -82,7 +74,9 @@ const PlayerStatsApp = () => {
     };
 
     const handleStatSelect = (statKey: string) => {
-        setSelectedStat(selectedStat === statKey ? null : statKey);
+        if (selectedStat !== statKey) {
+            setSelectedStat(statKey);
+        }
     };
 
     // Get display name for stat
@@ -136,45 +130,60 @@ const PlayerStatsApp = () => {
     }: {
         stat1: { label: string; value: any; key: string };
         stat2?: { label: string; value: any; key: string };
-    }) => (
-        <tr className='hover:bg-gray-50'>
-            <td
-                className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
-                    selectedStat === stat1.key
-                        ? 'bg-blue-100 force-blue-text'
-                        : 'force-black-text hover:bg-blue-50'
-                }`}
-                onClick={() => handleStatSelect(stat1.key)}
-            >
-                {stat1.label}
-            </td>
-            <td className='px-3 py-2 border-b text-left force-black-text w-1/4 border-r'>
-                {stat1.value}
-            </td>
-            {stat2 ? (
-                <>
-                    <td
-                        className={`px-3 py-2 border-b text-left font-medium w-1/4 cursor-pointer ${
-                            selectedStat === stat2.key
+    }) => {
+        const [hoveredStat, setHoveredStat] = useState<string | null>(null);
+
+        return (
+            <tr>
+                <td colSpan={2} className="p-0">
+                    <div
+                        className={`flex cursor-pointer ${
+                            selectedStat === stat1.key
                                 ? 'bg-blue-100 force-blue-text'
-                                : 'force-black-text hover:bg-blue-50'
+                                : hoveredStat === stat1.key
+                                ? 'bg-blue-50 force-black-text'
+                                : 'force-black-text'
                         }`}
-                        onClick={() => handleStatSelect(stat2.key)}
+                        onClick={() => handleStatSelect(stat1.key)}
+                        onMouseEnter={() => setHoveredStat(stat1.key)}
+                        onMouseLeave={() => setHoveredStat(null)}
                     >
-                        {stat2.label}
+                        <div className="px-3 py-2 border-b text-left font-medium w-1/2 border-r">
+                            {stat1.label}
+                        </div>
+                        <div className="px-3 py-2 border-b text-left w-1/2">
+                            {stat1.value}
+                        </div>
+                    </div>
+                </td>
+                {stat2 ? (
+                    <td colSpan={2} className="p-0">
+                        <div
+                            className={`flex cursor-pointer ${
+                                selectedStat === stat2.key
+                                    ? 'bg-blue-100 force-blue-text'
+                                    : hoveredStat === stat2.key
+                                    ? 'bg-blue-50 force-black-text'
+                                    : 'force-black-text'
+                            }`}
+                            onClick={() => handleStatSelect(stat2.key)}
+                            onMouseEnter={() => setHoveredStat(stat2.key)}
+                            onMouseLeave={() => setHoveredStat(null)}
+                        >
+                            <div className="px-3 py-2 border-b text-left font-medium w-1/2">
+                                {stat2.label}
+                            </div>
+                            <div className="px-3 py-2 border-b text-left w-1/2">
+                                {stat2.value}
+                            </div>
+                        </div>
                     </td>
-                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'>
-                        {stat2.value}
-                    </td>
-                </>
-            ) : (
-                <>
-                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'></td>
-                    <td className='px-3 py-2 border-b text-left force-black-text w-1/4'></td>
-                </>
-            )}
-        </tr>
-    );
+                ) : (
+                    <td colSpan={2} className='px-3 py-2 border-b text-left force-black-text'></td>
+                )}
+            </tr>
+        );
+    };
 
     const EventRow = ({ event }: { event: any }) => (
         <tr className='hover:bg-gray-50'>
@@ -308,7 +317,7 @@ const PlayerStatsApp = () => {
                 </h1>
 
                 {/* Search Section */}
-                <div className='bg-white rounded-lg shadow-md p-6 mb-8 max-w-4xl'>
+                <div className='bg-white rounded-lg shadow-md p-6 mb-8'>
                     <div className='relative'>
                         <div className='flex items-center'>
                             <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
@@ -482,26 +491,6 @@ const PlayerStatsApp = () => {
                                                     key: '5streaks',
                                                 }}
                                             />
-                                            {/* <StatRow
-                                                stat1={{
-                                                    label: 'Longest Win Streak',
-                                                    value:
-                                                        selectedPlayer.data
-                                                            .stats
-                                                            .longest_win_streak
-                                                            .value || 'N/A',
-                                                    key: 'longest_win_streak',
-                                                }}
-                                                stat2={{
-                                                    label: 'Longest Loss Streak',
-                                                    value:
-                                                        selectedPlayer.data
-                                                            .stats
-                                                            .longest_loss_streak
-                                                            .value || 'N/A',
-                                                    key: 'longest_loss_streak',
-                                                }}
-                                            /> */}
                                         </tbody>
                                     </table>
                                 </div>
