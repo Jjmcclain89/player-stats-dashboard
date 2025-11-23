@@ -32,6 +32,12 @@ export const abbreviateFormat = (format: string): string => {
   return formatMap[format] || format.substring(0, 3).toUpperCase();
 };
 
+// Event abbreviation function
+export const abbreviateEvent = (event: string): string => {
+  if (!event) return '-';
+  return event.substring(0, 4).toUpperCase();
+};
+
 // Format finish with ordinal suffix
 export const formatFinish = (finish: string | number): string => {
   if (!finish) return '';
