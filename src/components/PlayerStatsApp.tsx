@@ -133,7 +133,7 @@ const PlayerStatsApp = () => {
           `,
         }}
       />
-      <div className='max-w-7xl mx-auto'>
+      <div className='mx-10'>
         <h1 className='text-3xl font-bold mb-8 force-black-text'>
           Player Stats Dashboard
         </h1>
