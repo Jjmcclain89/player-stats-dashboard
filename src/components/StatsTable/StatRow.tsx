@@ -65,7 +65,7 @@ const StatRow: React.FC<StatRowProps> = ({
         {stat.value}
       </div>
       {showRank && (
-        <div className='px-3 py-2 border-b text-center w-1/4 text-sm text-gray-500'>
+        <div className='px-3 py-2 border-b text-center w-1/4 border-r text-sm text-gray-500'>
           {formatRank(stat.rank)}
         </div>
       )}
