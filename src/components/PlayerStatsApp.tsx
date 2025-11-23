@@ -6,13 +6,15 @@ import { SearchBar } from './SearchBar';
 import { StatsTable } from './StatsTable';
 import { EventsSection } from './EventsSection';
 import { Top10Panel } from './Top10Panel';
-import { Player, PlayerDataStructure } from './shared/types';
+import { Player, PlayerDataStructure, FilterOptions } from './shared/types';
+import { applyFilters } from './shared/rankingUtils';
 
 const PlayerStatsApp = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedStat, setSelectedStat] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterOptions>({});
   const [playerData] = useState(playerDataJson as unknown as PlayerDataStructure);
 
   // Extract all players for autocomplete
@@ -24,8 +26,13 @@ const PlayerStatsApp = () => {
     }));
   }, [playerData]);
 
-  // Filter players based on search term
-  const filteredPlayers = useMemo(() => {
+  // Apply filters to get filtered player pool
+  const filteredPlayerPool = useMemo(() => {
+    return applyFilters(players, filters);
+  }, [players, filters]);
+
+  // Filter players based on search term (from the filtered pool)
+  const searchFilteredPlayers = useMemo(() => {
     if (!searchTerm) return [];
     return players.filter((player) =>
       player.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -88,6 +95,24 @@ const PlayerStatsApp = () => {
     }
   };
 
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  const handleTop10PlayerSelect = (playerName: string) => {
+    // Find the player by name
+    const player = players.find(p => p.fullName === playerName);
+    if (player) {
+      setSelectedPlayer(player);
+      setSearchTerm(player.fullName);
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedPlayer', JSON.stringify(player));
+      }
+    }
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 p-6'>
       <style
@@ -113,41 +138,49 @@ const PlayerStatsApp = () => {
           Player Stats Dashboard
         </h1>
 
-        {/* Search Section */}
-        <SearchBar
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          onPlayerSelect={handlePlayerSelect}
-          filteredPlayers={filteredPlayers}
-          showDropdown={showDropdown}
-          onShowDropdownChange={setShowDropdown}
-        />
-
-        {/* Player Data Display */}
-        {selectedPlayer && (
-          <div className='space-y-6'>
-            {/* Stats Table with Side Panel */}
-            <div className='flex gap-6'>
-              <StatsTable
-                selectedPlayer={selectedPlayer}
-                selectedStat={selectedStat}
-                onStatSelect={handleStatSelect}
-              />
-
-              {/* Top 10 Side Panel */}
-              <div className='w-80'>
-                <Top10Panel
-                  selectedStat={selectedStat}
-                  selectedPlayer={selectedPlayer}
-                  playerData={playerData}
-                />
-              </div>
-            </div>
-
-            {/* Events Cards Section */}
-            <EventsSection selectedPlayer={selectedPlayer} />
+        {/* Top section with sidebar and main content */}
+        <div className='flex gap-6 mb-6 items-stretch'>
+          {/* Left Sidebar - Search and Filters */}
+          <div className='w-80 flex-shrink-0'>
+            <SearchBar
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              onPlayerSelect={handlePlayerSelect}
+              filteredPlayers={searchFilteredPlayers}
+              showDropdown={showDropdown}
+              onShowDropdownChange={setShowDropdown}
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              totalPlayers={players.length}
+              filteredPlayerCount={filteredPlayerPool.length}
+            />
           </div>
-        )}
+
+          {/* Main Content Area */}
+          <div className='flex-1 flex gap-6'>
+            <StatsTable
+              selectedPlayer={selectedPlayer}
+              selectedStat={selectedStat}
+              onStatSelect={handleStatSelect}
+              allPlayers={players}
+              filters={filters}
+            />
+
+            {/* Top 10 Side Panel */}
+            <div className='w-80 flex-shrink-0'>
+              <Top10Panel
+                selectedStat={selectedStat}
+                selectedPlayer={selectedPlayer}
+                playerData={playerData}
+                filters={filters}
+                onPlayerSelect={handleTop10PlayerSelect}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Events Section - Full width at bottom */}
+        {selectedPlayer && <EventsSection selectedPlayer={selectedPlayer} />}
       </div>
     </div>
   );

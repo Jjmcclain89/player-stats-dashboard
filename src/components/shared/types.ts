@@ -3,6 +3,7 @@ export interface PlayerInfo {
   first_name?: string;
   last_name?: string;
   full_name: string;
+  wc31_qualification?: boolean;
 }
 
 export interface StatValue {
@@ -74,13 +75,29 @@ export interface Player {
   data: PlayerData;
 }
 
+// New type for calculated top 10 entries
 export interface Top10Entry {
   rank: number;
   player_full_name: string;
+  player_id: string;
   stat_value: any;
 }
 
+// Updated data structure without pre-calculated top_10
 export interface PlayerDataStructure {
   players: { [key: string]: PlayerData };
-  top_10: { [key: string]: { [key: string]: Top10Entry } };
+  // top_10 field removed - will be calculated dynamically
+}
+
+// Filter options for player pool
+export interface FilterOptions {
+  minEvents?: number;
+  minDay2s?: number;
+  maxEvents?: number;
+  minTop8s?: number;
+  hasTop8?: boolean;
+  worldsPlayersOnly?: boolean;
+  formats?: string[];
+  startDate?: string;
+  endDate?: string;
 }

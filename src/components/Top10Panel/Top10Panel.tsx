@@ -1,21 +1,61 @@
 // Top10Panel/Top10Panel.tsx
-import React from 'react';
-import { Player, PlayerDataStructure, Top10Entry } from '../shared/types';
+import React, { useMemo } from 'react';
+import { Player, PlayerDataStructure, FilterOptions } from '../shared/types';
 import { getStatDisplayName } from '../shared/utils';
+import {
+  calculateTop10,
+  calculatePlayerRank,
+  applyFilters,
+  isRankableStat,
+} from '../shared/rankingUtils';
 
 interface Top10PanelProps {
   selectedStat: string | null;
   selectedPlayer: Player | null;
   playerData: PlayerDataStructure;
+  filters: FilterOptions;
+  onPlayerSelect: (playerName: string) => void;
 }
 
 const Top10Panel: React.FC<Top10PanelProps> = ({
   selectedStat,
   selectedPlayer,
   playerData,
+  filters,
+  onPlayerSelect,
 }) => {
+  // Extract all players into an array
+  const allPlayers = useMemo(() => {
+    return Object.entries(playerData.players).map(([key, data]) => ({
+      id: key,
+      fullName: data.player_info.full_name,
+      data: data,
+    }));
+  }, [playerData]);
+
+  // Apply filters to get filtered player pool
+  const filteredPlayers = useMemo(() => {
+    return applyFilters(allPlayers, filters);
+  }, [allPlayers, filters]);
+
+  // Calculate Top 10 for selected stat
+  const top10Rankings = useMemo(() => {
+    if (!selectedStat || !isRankableStat(selectedStat)) {
+      return [];
+    }
+    return calculateTop10(filteredPlayers, selectedStat);
+  }, [filteredPlayers, selectedStat]);
+
+  // Calculate selected player's rank
+  const playerRankInfo = useMemo(() => {
+    if (!selectedPlayer || !selectedStat) return null;
+    return calculatePlayerRank(filteredPlayers, selectedPlayer, selectedStat);
+  }, [filteredPlayers, selectedPlayer, selectedStat]);
+
   // Placeholder content component for consistent height
-  const PlaceholderContent: React.FC<{ visible?: boolean }> = ({ visible = false }) => (
+  const PlaceholderContent: React.FC<{ visible?: boolean }> = ({
+    visible = false,
+  }) => (
     <div className={`space-y-1 ${visible ? '' : 'invisible'}`}>
       {Array.from({ length: 10 }, (_, i) => (
         <div
@@ -36,10 +76,18 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
     </div>
   );
 
-  const PlaceholderPlayerRank: React.FC<{ visible?: boolean }> = ({ visible = false }) => (
+  const PlaceholderPlayerRank: React.FC<{ visible?: boolean }> = ({
+    visible = false,
+  }) => (
     <>
-      <div className={`border-t border-gray-200 my-4 ${visible ? '' : 'invisible'}`}></div>
-      <div className={`bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded ${visible ? '' : 'invisible'}`}>
+      <div
+        className={`border-t border-gray-200 my-4 ${visible ? '' : 'invisible'}`}
+      ></div>
+      <div
+        className={`bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded ${
+          visible ? '' : 'invisible'
+        }`}
+      >
         <div className='flex justify-between items-center'>
           <div className='flex items-center gap-4'>
             <span className='font-bold text-yellow-700 w-6 text-sm pr-5'>
@@ -57,7 +105,7 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
 
   if (!selectedStat) {
     return (
-      <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
+      <div className='bg-white rounded-lg shadow-md p-6 h-full flex flex-col'>
         <h3 className='text-lg font-bold mb-4 force-black-text'>
           Top 10 Rankings
         </h3>
@@ -70,14 +118,14 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
     );
   }
 
-  if (!(playerData.top_10 as any)[selectedStat]) {
+  if (!isRankableStat(selectedStat)) {
     return (
-      <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
+      <div className='bg-white rounded-lg shadow-md p-6 h-full flex flex-col'>
         <h3 className='text-lg font-bold mb-4 force-black-text'>
           {getStatDisplayName(selectedStat)}
         </h3>
         <p className='text-gray-500 text-center'>
-          No top 10 available for this stat
+          No rankings available for this stat
         </p>
         <PlaceholderContent />
         <PlaceholderPlayerRank />
@@ -85,50 +133,64 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
     );
   }
 
-  const top10Data = (playerData.top_10 as any)[selectedStat];
-  const rankings = Object.values(top10Data) as Top10Entry[];
-
-  // Get the selected player's rank for this stat
-  const playerRank = selectedPlayer?.data?.stats?.[selectedStat as keyof typeof selectedPlayer.data.stats]?.rank;
-  const playerStatValue = selectedPlayer?.data?.stats?.[selectedStat as keyof typeof selectedPlayer.data.stats]?.value;
-
   return (
-    <div className='bg-white rounded-lg shadow-md p-6 h-fit'>
-      <h3 className='text-lg font-bold mb-4 force-black-text'>
-        Top 10: {getStatDisplayName(selectedStat)}
-      </h3>
-      <div className='space-y-1'>
-        {rankings.map((entry: Top10Entry) => (
-          <div
-            key={entry.rank}
-            className='flex justify-between items-center py-1 px-3 bg-gray-50 rounded border-l-4 border-blue-500'
-          >
-            <div className='flex items-center gap-2'>
-              <span className='font-bold text-gray-600 w-6 text-sm'>
-                #{entry.rank}
-              </span>
-              <span className='force-black-text font-medium text-sm'>
-                {entry.player_full_name}
-              </span>
-            </div>
-            <span className='force-black-text font-bold text-sm'>
-              {selectedStat.includes('pct')
-                ? `${entry.stat_value}%`
-                : entry.stat_value}
-            </span>
-          </div>
-        ))}
+    <div className='bg-white rounded-lg shadow-md p-6 h-full flex flex-col'>
+      {/* Header */}
+      <div className='flex items-center justify-between mb-4'>
+        <h3 className='text-lg font-bold force-black-text'>
+          Top 10: {getStatDisplayName(selectedStat)}
+        </h3>
       </div>
 
+      {/* Rankings List */}
+      {top10Rankings.length === 0 ? (
+        <p className='text-gray-500 text-center text-sm'>
+          No players match the current filters
+        </p>
+      ) : (
+        <div className='space-y-1'>
+          {top10Rankings.map((entry) => {
+            const isSelectedPlayer = selectedPlayer?.fullName === entry.player_full_name;
+            return (
+              <div
+                key={entry.rank}
+                onClick={() => onPlayerSelect(entry.player_full_name)}
+                className={`flex justify-between items-center py-1 px-3 rounded border-l-4 cursor-pointer transition-colors ${
+                  isSelectedPlayer
+                    ? 'bg-yellow-50 border-yellow-500 hover:bg-yellow-100'
+                    : 'bg-gray-50 border-blue-500 hover:bg-gray-100'
+                }`}
+              >
+                <div className='flex items-center gap-2'>
+                  <span className={`font-bold w-6 text-sm ${
+                    isSelectedPlayer ? 'text-yellow-700' : 'text-gray-600'
+                  }`}>
+                    #{entry.rank}
+                  </span>
+                  <span className='force-black-text font-medium text-sm'>
+                    {entry.player_full_name}
+                  </span>
+                </div>
+                <span className='force-black-text font-bold text-sm'>
+                  {selectedStat.includes('pct')
+                    ? `${entry.stat_value}%`
+                    : entry.stat_value}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Player Personal Rank Section */}
-      {selectedPlayer && playerRank && (
+      {selectedPlayer && playerRankInfo && (
         <>
           <div className='border-t border-gray-200 my-4'></div>
           <div className='bg-yellow-50 border-l-4 border-yellow-500 py-1 px-3 rounded'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center gap-4'>
                 <span className='font-bold text-yellow-700 w-6 text-sm pr-5'>
-                  #{playerRank}
+                  #{playerRankInfo.rank}
                 </span>
                 <span className='force-black-text font-medium text-sm'>
                   {selectedPlayer.fullName}
@@ -136,11 +198,20 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
               </div>
               <span className='force-black-text font-bold text-sm'>
                 {selectedStat.includes('pct')
-                  ? `${playerStatValue}%`
-                  : playerStatValue}
+                  ? `${
+                      selectedPlayer.data.stats[
+                        selectedStat as keyof typeof selectedPlayer.data.stats
+                      ].value
+                    }%`
+                  : selectedPlayer.data.stats[
+                      selectedStat as keyof typeof selectedPlayer.data.stats
+                    ].value}
               </span>
             </div>
           </div>
+          <p className='text-xs text-gray-500 mt-2 text-center'>
+            Ranked {playerRankInfo.rank} of {playerRankInfo.totalPlayers} players
+          </p>
         </>
       )}
     </div>

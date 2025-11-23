@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 
 interface StatRowProps {
-  stat1: { label: string; value: any; key: string };
-  stat2?: { label: string; value: any; key: string };
+  stat1: { label: string; value: any; key: string; rank?: number | null };
+  stat2?: { label: string; value: any; key: string; rank?: number | null };
   selectedStat: string | null;
   onStatSelect: (statKey: string) => void;
 }
@@ -16,7 +16,34 @@ const StatRow: React.FC<StatRowProps> = ({
 }) => {
   const [hoveredStat, setHoveredStat] = useState<string | null>(null);
 
-  const renderStatCell = (stat: { label: string; value: any; key: string }) => (
+  // Helper to format rank with ordinal suffix
+  const formatRank = (rank: number | null | undefined): string => {
+    if (!rank) return '-';
+    
+    const suffix = (num: number): string => {
+      const lastDigit = num % 10;
+      const lastTwoDigits = num % 100;
+
+      if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return 'th';
+      }
+
+      switch (lastDigit) {
+        case 1:
+          return 'st';
+        case 2:
+          return 'nd';
+        case 3:
+          return 'rd';
+        default:
+          return 'th';
+      }
+    };
+
+    return `${rank}${suffix(rank)}`;
+  };
+
+  const renderStatCell = (stat: { label: string; value: any; key: string; rank?: number | null }) => (
     <div
       className={`flex cursor-pointer ${
         selectedStat === stat.key
@@ -29,11 +56,14 @@ const StatRow: React.FC<StatRowProps> = ({
       onMouseEnter={() => setHoveredStat(stat.key)}
       onMouseLeave={() => setHoveredStat(null)}
     >
-      <div className='px-3 py-2 border-b text-left font-medium w-1/2 border-r'>
+      <div className='px-3 py-2 border-b text-left font-medium w-1/2 border-r text-sm whitespace-nowrap overflow-hidden text-ellipsis'>
         {stat.label}
       </div>
-      <div className='px-3 py-2 border-b text-left w-1/2'>
+      <div className='px-3 py-2 border-b text-left w-1/4 border-r text-sm'>
         {stat.value}
+      </div>
+      <div className='px-3 py-2 border-b text-center w-1/4 border-r text-sm text-gray-500'>
+        {formatRank(stat.rank)}
       </div>
     </div>
   );
