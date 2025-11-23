@@ -208,8 +208,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
             {/* Filter Info */}
             <div className='mt-3 pt-3 border-t border-gray-200'>
-              <p className='text-xs text-gray-600'>
-                Showing {filteredPlayerCount} of {totalPlayers} players
+              <p className='text-xs text-gray-600 text-right
+'>
+                {filteredPlayerCount} players
               </p>
             </div>
           </div>
