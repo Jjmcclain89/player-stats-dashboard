@@ -8,26 +8,26 @@ interface RecordRowProps {
 
 const RecordRow: React.FC<RecordRowProps> = ({ record1, record2 }) => {
   return (
-    <tr>
-      <td className='px-3 py-2 border-b text-left font-medium text-sm force-black-text w-1/4 border-r'>
+    <tr className='flex flex-col lg:flex-row lg:table-row'>
+      <td className='px-3 py-2 border-b text-left font-medium text-sm force-black-text w-full lg:w-1/4'>
         {record1.label}
       </td>
-      <td className='px-3 py-2 border-b text-left text-sm force-black-text w-1/4 border-r'>
+      <td className='px-3 py-2 border-b text-left text-sm force-black-text w-full lg:w-1/4'>
         {record1.value}
       </td>
       {record2 ? (
         <>
-          <td className='px-3 py-2 border-b text-left font-medium text-sm force-black-text w-1/4 border-r'>
+          <td className='px-3 py-2 border-b text-left font-medium text-sm force-black-text w-full lg:w-1/4'>
             {record2.label}
           </td>
-          <td className='px-3 py-2 border-b text-left text-sm force-black-text w-1/4 border-r'>
+          <td className='px-3 py-2 border-b text-left text-sm force-black-text w-full lg:w-1/4'>
             {record2.value}
           </td>
         </>
       ) : (
         <>
-          <td className='px-3 py-2 border-b force-black-text w-1/4'></td>
-          <td className='px-3 py-2 border-b force-black-text w-1/4'></td>
+          <td className='hidden lg:table-cell px-3 py-2 border-b force-black-text lg:w-1/4'></td>
+          <td className='hidden lg:table-cell px-3 py-2 border-b force-black-text lg:w-1/4'></td>
         </>
       )}
     </tr>

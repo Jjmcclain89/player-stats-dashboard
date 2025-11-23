@@ -6,6 +6,7 @@ interface StatRowProps {
   stat2?: { label: string; value: any; key: string; rank?: number | null };
   selectedStat: string | null;
   onStatSelect: (statKey: string) => void;
+  showRank?: boolean;
 }
 
 const StatRow: React.FC<StatRowProps> = ({
@@ -13,6 +14,7 @@ const StatRow: React.FC<StatRowProps> = ({
   stat2,
   selectedStat,
   onStatSelect,
+  showRank = true,
 }) => {
   const [hoveredStat, setHoveredStat] = useState<string | null>(null);
 
@@ -56,31 +58,33 @@ const StatRow: React.FC<StatRowProps> = ({
       onMouseEnter={() => setHoveredStat(stat.key)}
       onMouseLeave={() => setHoveredStat(null)}
     >
-      <div className='px-3 py-2 border-b text-left font-medium w-1/2 border-r text-sm whitespace-nowrap overflow-hidden text-ellipsis'>
+      <div className={`px-3 py-2 border-b text-left font-medium ${showRank ? 'w-1/2' : 'w-1/2'} border-r text-sm whitespace-nowrap overflow-hidden text-ellipsis`}>
         {stat.label}
       </div>
-      <div className='px-3 py-2 border-b text-left w-1/4 border-r text-sm'>
+      <div className={`px-3 py-2 border-b text-left ${showRank ? 'w-1/4 border-r' : 'w-1/2'} text-sm`}>
         {stat.value}
       </div>
-      <div className='px-3 py-2 border-b text-center w-1/4 border-r text-sm text-gray-500'>
-        {formatRank(stat.rank)}
-      </div>
+      {showRank && (
+        <div className='px-3 py-2 border-b text-center w-1/4 text-sm text-gray-500'>
+          {formatRank(stat.rank)}
+        </div>
+      )}
     </div>
   );
 
   return (
-    <tr>
-      <td colSpan={2} className='p-0'>
+    <tr className='flex flex-col lg:flex-row lg:table-row'>
+      <td colSpan={2} className='p-0 w-full lg:w-auto'>
         {renderStatCell(stat1)}
       </td>
       {stat2 ? (
-        <td colSpan={2} className='p-0'>
+        <td colSpan={2} className='p-0 w-full lg:w-auto'>
           {renderStatCell(stat2)}
         </td>
       ) : (
         <td
           colSpan={2}
-          className='px-3 py-2 border-b text-left force-black-text'
+          className='hidden lg:table-cell px-3 py-2 border-b text-left force-black-text'
         ></td>
       )}
     </tr>

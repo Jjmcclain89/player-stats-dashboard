@@ -48,8 +48,8 @@ const StatsTable: React.FC<StatsTableProps> = ({
         </h2>
 
         <div className='overflow-x-auto'>
-          <table className='w-full border-collapse border border-gray-200'>
-            <tbody>
+          <table className='w-full border-collapse border border-gray-200 block lg:table'>
+            <tbody className='block lg:table-row-group'>
               <StatRow
                 stat1={{
                   label: 'Total Events',
@@ -174,8 +174,8 @@ const StatsTable: React.FC<StatsTableProps> = ({
         </h2>
 
         <div className='overflow-x-auto'>
-          <table className='w-full border-collapse border border-gray-200'>
-            <tbody>
+          <table className='w-full border-collapse border border-gray-200 block lg:table'>
+            <tbody className='block lg:table-row-group'>
               <RecordRow
                 record1={{
                   label: 'Overall Record',

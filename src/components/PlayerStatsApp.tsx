@@ -139,9 +139,9 @@ const PlayerStatsApp = () => {
         </h1>
 
         {/* Top section with sidebar and main content */}
-        <div className='flex gap-6 mb-6 items-stretch'>
+        <div className='flex flex-col lg:flex-row gap-6 mb-6 lg:items-stretch'>
           {/* Left Sidebar - Search and Filters */}
-          <div className='w-80 flex-shrink-0'>
+          <div className='w-full lg:w-80 flex-shrink-0'>
             <SearchBar
               searchTerm={searchTerm}
               onSearchChange={handleSearchChange}
@@ -157,7 +157,7 @@ const PlayerStatsApp = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className='flex-1 flex gap-6'>
+          <div className='flex-1 flex flex-col lg:flex-row gap-6'>
             <StatsTable
               selectedPlayer={selectedPlayer}
               selectedStat={selectedStat}
@@ -167,7 +167,7 @@ const PlayerStatsApp = () => {
             />
 
             {/* Top 10 Side Panel */}
-            <div className='w-80 flex-shrink-0'>
+            <div className='w-full lg:w-80 flex-shrink-0'>
               <Top10Panel
                 selectedStat={selectedStat}
                 selectedPlayer={selectedPlayer}
