@@ -1,5 +1,6 @@
 // EventsSection/EventsTableView.tsx
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Event } from '../shared/types';
 import { abbreviateFormat, abbreviateEvent } from '../shared/utils';
 
@@ -178,7 +179,14 @@ const EventsTableView: React.FC<EventsTableViewProps> = ({ events }) => {
           {sortedEvents.map((event, index) => (
             <React.Fragment key={index}>
               <tr className='hover:bg-gray-50'>
-                <TableCell isFirstColumn align='left' extraClasses='font-medium' columnIndex={0} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{abbreviateEvent(event.event_code)}</TableCell>
+                <TableCell isFirstColumn align='left' extraClasses='font-medium bg-blue-100' columnIndex={0} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>
+                  <Link 
+                    href={`/events/${event.event_code}`}
+                    className='text-blue-600 hover:text-blue-800 hover:underline'
+                  >
+                    {abbreviateEvent(event.event_code)}
+                  </Link>
+                </TableCell>
                 <TableCell columnIndex={1} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{abbreviateFormat(event.format)}</TableCell>
                 <TableCell columnIndex={2} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.event_id}</TableCell>
                 <TableCell extraClasses='font-medium' columnIndex={3} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.finish}</TableCell>

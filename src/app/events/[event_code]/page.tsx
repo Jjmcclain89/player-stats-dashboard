@@ -161,6 +161,9 @@ const EventPageClient = () => {
                   <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
                     Record
                   </th>
+                  <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                    Notes
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -181,7 +184,7 @@ const EventPageClient = () => {
                     <td className='px-4 py-3 border border-gray-200'>
                       <button
                         onClick={() => handlePlayerClick(result.playerId, result.playerName)}
-                        className='force-black-text font-medium text-left hover:text-blue-600 hover:underline cursor-pointer transition-colors'
+                        className='text-blue-600 font-medium text-left hover:text-blue-800 hover:underline cursor-pointer transition-colors'
                       >
                         {result.playerName}
                       </button>
@@ -194,6 +197,11 @@ const EventPageClient = () => {
                     <td className='px-4 py-3 border border-gray-200'>
                       <span className='force-black-text text-sm'>
                         {result.record || '-'}
+                      </span>
+                    </td>
+                    <td className='px-4 py-3 border border-gray-200'>
+                      <span className='force-black-text text-sm'>
+                        {result.notes || '-'}
                       </span>
                     </td>
                   </tr>
