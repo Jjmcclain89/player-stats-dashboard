@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import playerDataJson from '../../../data/data.json';
 import { PlayerDataStructure } from '../../../components/shared/types';
 import { getEventResults, EventDetails } from '../../../components/shared/eventUtils';
+import { abbreviateFormat } from '../../../components/shared/utils';
 
 const EventPageClient = () => {
   const params = useParams();
@@ -15,6 +16,63 @@ const EventPageClient = () => {
   const [eventDetails, setEventDetails] = useState<EventDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [playerData] = useState(playerDataJson as unknown as PlayerDataStructure);
+  const [richMode, setRichMode] = useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const scrollbarRef = React.useRef<HTMLDivElement>(null);
+
+  // Load rich mode state from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedRichMode = localStorage.getItem('eventPageRichMode');
+      if (savedRichMode !== null) {
+        setRichMode(savedRichMode === 'true');
+      }
+    }
+  }, []);
+
+  // Save rich mode state to localStorage when it changes
+  const handleRichModeToggle = (checked: boolean) => {
+    setRichMode(checked);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('eventPageRichMode', checked.toString());
+    }
+  };
+
+  // Sync scrollbar with content
+  useEffect(() => {
+    if (!richMode || !contentRef.current || !scrollbarRef.current) return;
+
+    const content = contentRef.current;
+    const scrollbar = scrollbarRef.current;
+
+    const handleContentScroll = () => {
+      if (scrollbar) {
+        scrollbar.scrollLeft = content.scrollLeft;
+      }
+    };
+
+    const handleScrollbarScroll = () => {
+      if (content) {
+        content.scrollLeft = scrollbar.scrollLeft;
+      }
+    };
+
+    content.addEventListener('scroll', handleContentScroll);
+    scrollbar.addEventListener('scroll', handleScrollbarScroll);
+
+    // Set scrollbar width to match content scroll width
+    const updateScrollbarWidth = () => {
+      if (scrollbar.firstElementChild) {
+        (scrollbar.firstElementChild as HTMLElement).style.width = `${content.scrollWidth}px`;
+      }
+    };
+    updateScrollbarWidth();
+
+    return () => {
+      content.removeEventListener('scroll', handleContentScroll);
+      scrollbar.removeEventListener('scroll', handleScrollbarScroll);
+    };
+  }, [richMode, eventDetails]);
 
   const handleBackClick = () => {
     router.push('/');
@@ -100,17 +158,22 @@ const EventPageClient = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 p-6'>
+    <>
+      <div ref={contentRef} className={`min-h-screen bg-gray-50 p-6 ${richMode ? 'overflow-x-auto' : ''}`}>
       <style
         dangerouslySetInnerHTML={{
           __html: `
             .force-black-text {
               color: #000000 !important;
             }
+            .notes-cell {
+              max-width: 300px;
+            }
           `,
         }}
       />
-      <div className='max-w-6xl mx-auto'>
+      
+      <div className={richMode ? 'min-w-max' : 'max-w-6xl mx-auto'}>
         {/* Back Button */}
         <button
           onClick={handleBackClick}
@@ -141,11 +204,29 @@ const EventPageClient = () => {
             </div>
           </div>
 
-          <h2 className='text-xl font-bold mb-6 force-black-text'>
-            Final Standings
-          </h2>
+          {/* Header with Rich Mode Toggle */}
+          <div className='flex items-center gap-4 mb-6'>
+            <h2 className='text-xl font-bold force-black-text'>
+              Final Standings
+            </h2>
+            
+            {/* Rich Mode Toggle */}
+            <label className='flex items-center cursor-pointer'>
+              <span className='mr-2 text-sm font-medium force-black-text'>Rich Mode</span>
+              <div className='relative'>
+                <input
+                  type='checkbox'
+                  checked={richMode}
+                  onChange={(e) => handleRichModeToggle(e.target.checked)}
+                  className='sr-only'
+                />
+                <div className={`block w-14 h-8 rounded-full transition-colors ${richMode ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${richMode ? 'transform translate-x-6' : ''}`}></div>
+              </div>
+            </label>
+          </div>
           
-          <div className='overflow-x-auto'>
+          <div>
             <table className='w-full border-collapse border border-gray-200'>
               <thead>
                 <tr className='bg-gray-50'>
@@ -164,54 +245,183 @@ const EventPageClient = () => {
                   <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
                     Notes
                   </th>
+                  {richMode && (
+                    <>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        Ltd Rec
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        # Drafts
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        + Drafts
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        - Drafts
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        🏆s
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        0W Drafts
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        Cn Rec
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        D1 Rec
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        D2 Rec
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        D3 Rec
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        Win St
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        Loss St
+                      </th>
+                      <th className='px-4 py-3 text-left font-semibold force-black-text border border-gray-200'>
+                        5+ St
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {eventDetails.results.map((result, index) => (
-                  <tr 
-                    key={`${result.playerId}-${result.finish}`}
-                    className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  >
-                    <td className='px-4 py-3 border border-gray-200'>
-                      <span className='font-semibold force-black-text'>
-                        {result.finish === 1 && '🏆 '}
-                        {result.finish >= 2 && result.finish <= 8 && '🥉 '}
-                        {result.finish}{result.finish === 1 ? 'st' : 
-                          result.finish === 2 ? 'nd' : 
-                          result.finish === 3 ? 'rd' : 'th'}
-                      </span>
-                    </td>
-                    <td className='px-4 py-3 border border-gray-200'>
-                      <button
-                        onClick={() => handlePlayerClick(result.playerId, result.playerName)}
-                        className='text-blue-600 font-medium text-left hover:text-blue-800 hover:underline cursor-pointer transition-colors'
-                      >
-                        {result.playerName}
-                      </button>
-                    </td>
-                    <td className='px-4 py-3 border border-gray-200'>
-                      <span className='force-black-text'>
-                        {result.deck}
-                      </span>
-                    </td>
-                    <td className='px-4 py-3 border border-gray-200'>
-                      <span className='force-black-text text-sm'>
-                        {result.record || '-'}
-                      </span>
-                    </td>
-                    <td className='px-4 py-3 border border-gray-200'>
-                      <span className='force-black-text text-sm'>
-                        {result.notes || '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {eventDetails.results.map((result, index) => {
+                  return (
+                    <tr 
+                      key={`${result.playerId}-${result.finish}`}
+                      className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
+                      <td className='px-4 py-3 border border-gray-200'>
+                        <span className='font-semibold force-black-text'>
+                          {result.finish === 1 && '🏆 '}
+                          {result.finish >= 2 && result.finish <= 8 && '🥉 '}
+                          {result.finish}{result.finish === 1 ? 'st' : 
+                            result.finish === 2 ? 'nd' : 
+                            result.finish === 3 ? 'rd' : 'th'}
+                        </span>
+                      </td>
+                      <td className='px-4 py-3 border border-gray-200'>
+                        <button
+                          onClick={() => handlePlayerClick(result.playerId, result.playerName)}
+                          className='text-blue-600 font-medium text-left hover:text-blue-800 hover:underline cursor-pointer transition-colors'
+                        >
+                          {result.playerName}
+                        </button>
+                      </td>
+                      <td className='px-4 py-3 border border-gray-200'>
+                        <span className='force-black-text'>
+                          {result.deck}
+                        </span>
+                      </td>
+                      <td className='px-4 py-3 border border-gray-200'>
+                        <span className='force-black-text text-sm'>
+                          {result.record || '-'}
+                        </span>
+                      </td>
+                      <td className={`px-4 py-3 border border-gray-200 ${richMode? 'notes-cell':''}`}>
+                        <div className='force-black-text text-sm overflow-hidden'>
+                          {result.notes || '-'}
+                        </div>
+                      </td>
+                      {richMode && (
+                        <>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {`${result.limited_wins || 0}-${result.limited_losses || 0}-${result.limited_draws || 0}`}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.num_drafts || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.positive_drafts || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.negative_drafts || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.trophy_drafts || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.no_win_drafts || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {`${result.constructed_wins || 0}-${result.constructed_losses || 0}-${result.constructed_draws || 0}`}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {`${result.day1_wins || 0}-${result.day1_losses || 0}-${result.day1_draws || 0}`}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {`${result.day2_wins || 0}-${result.day2_losses || 0}-${result.day2_draws || 0}`}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {`${result.day3_wins || 0}-${result.day3_losses || 0}-${result.day3_draws || 0}`}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.win_streak || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.loss_streak || 0}
+                            </span>
+                          </td>
+                          <td className='px-4 py-3 border border-gray-200'>
+                            <span className='force-black-text text-sm'>
+                              {result.streak5 || 0}
+                            </span>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
+      
+      {/* Custom Floating Scrollbar */}
+      {richMode && (
+        <div
+          ref={scrollbarRef}
+          className='fixed bottom-0 left-0 right-0 overflow-x-auto overflow-y-hidden bg-gray-200 border-t-2 border-gray-400'
+          style={{ 
+            height: '20px',
+            zIndex: 9998
+          }}
+        >
+          <div style={{ height: '1px' }}></div>
+        </div>
+      )}
+    </>
   );
 };
 
