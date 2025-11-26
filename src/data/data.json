@@ -1945,7 +1945,7 @@
                 "first_name": "Alex",
                 "last_name": "Rohan",
                 "full_name": "Alex Rohan",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
@@ -9085,7 +9085,7 @@
                 "first_name": "Stefan",
                 "last_name": "Schütz",
                 "full_name": "Stefan Schütz",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
@@ -38005,7 +38005,7 @@
                 "first_name": "Mario",
                 "last_name": "Flores",
                 "full_name": "Mario Flores",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
@@ -73175,7 +73175,7 @@
                 "first_name": "Wang",
                 "last_name": "Kunrui",
                 "full_name": "Wang Kunrui",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
@@ -76845,7 +76845,7 @@
                 "first_name": "Javier",
                 "last_name": "Castellán",
                 "full_name": "Javier Castellán",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
@@ -91565,7 +91565,7 @@
                 "first_name": "Pedro",
                 "last_name": "Flores",
                 "full_name": "Pedro Flores",
-                "wc31_qualification": false
+                "wc31_qualification": true
             },
             "events": {
                 "entry_1": {
