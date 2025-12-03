@@ -10,114 +10,116 @@ import { Player, PlayerDataStructure, FilterOptions } from './shared/types';
 import { applyFilters } from './shared/rankingUtils';
 
 const PlayerStatsApp = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedStat, setSelectedStat] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FilterOptions>({});
-  const [playerData] = useState(playerDataJson as unknown as PlayerDataStructure);
-
-  // Extract all players for autocomplete
-  const players = useMemo(() => {
-    return Object.entries(playerData.players).map(([key, data]) => ({
-      id: key,
-      fullName: data.player_info.full_name,
-      data: data,
-    }));
-  }, [playerData]);
-
-  // Apply filters to get filtered player pool
-  const filteredPlayerPool = useMemo(() => {
-    return applyFilters(players, filters);
-  }, [players, filters]);
-
-  // Filter players based on search term (from the filtered pool)
-  const searchFilteredPlayers = useMemo(() => {
-    if (!searchTerm) return [];
-    return players.filter((player) =>
-      player.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedStat, setSelectedStat] = useState<string | null>(null);
+    const [filters, setFilters] = useState<FilterOptions>({});
+    const [playerData] = useState(
+        playerDataJson as unknown as PlayerDataStructure
     );
-  }, [players, searchTerm]);
 
-  const handlePlayerSelect = (player: Player) => {
-    setSelectedPlayer(player);
-    setSearchTerm(player.fullName);
-    setShowDropdown(false);
-    
-    // Save selected player to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedPlayer', JSON.stringify(player));
-    }
-  };
+    // Extract all players for autocomplete
+    const players = useMemo(() => {
+        return Object.entries(playerData.players).map(([key, data]) => ({
+            id: key,
+            fullName: data.player_info.full_name,
+            data: data,
+        }));
+    }, [playerData]);
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    if (!value) {
-      setSelectedPlayer(null);
-      // Clear localStorage when search is cleared
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('selectedPlayer');
-      }
-    }
-  };
+    // Apply filters to get filtered player pool
+    const filteredPlayerPool = useMemo(() => {
+        return applyFilters(players, filters);
+    }, [players, filters]);
 
-  // Load selected player and stat from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedPlayer = localStorage.getItem('selectedPlayer');
-      const savedStat = localStorage.getItem('selectedStat');
-      
-      if (savedPlayer) {
-        try {
-          const player = JSON.parse(savedPlayer);
-          setSelectedPlayer(player);
-          setSearchTerm(player.fullName);
-        } catch (error) {
-          console.error('Error loading saved player:', error);
-          localStorage.removeItem('selectedPlayer');
+    // Filter players based on search term (from the filtered pool)
+    const searchFilteredPlayers = useMemo(() => {
+        if (!searchTerm) return [];
+        return filteredPlayerPool.filter((player) =>
+            player.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [filteredPlayerPool, searchTerm]);
+
+    const handlePlayerSelect = (player: Player) => {
+        setSelectedPlayer(player);
+        setSearchTerm(player.fullName);
+        setShowDropdown(false);
+
+        // Save selected player to localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('selectedPlayer', JSON.stringify(player));
         }
-      }
-      
-      if (savedStat) {
-        setSelectedStat(savedStat);
-      }
-    }
-  }, []);
+    };
 
-  const handleStatSelect = (statKey: string) => {
-    if (selectedStat !== statKey) {
-      setSelectedStat(statKey);
-      
-      // Save selected stat to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedStat', statKey);
-      }
-    }
-  };
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        if (!value) {
+            setSelectedPlayer(null);
+            // Clear localStorage when search is cleared
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('selectedPlayer');
+            }
+        }
+    };
 
-  const handleFiltersChange = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
-  };
+    // Load selected player and stat from localStorage on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedPlayer = localStorage.getItem('selectedPlayer');
+            const savedStat = localStorage.getItem('selectedStat');
 
-  const handleTop10PlayerSelect = (playerName: string) => {
-    // Find the player by name
-    const player = players.find(p => p.fullName === playerName);
-    if (player) {
-      setSelectedPlayer(player);
-      setSearchTerm(player.fullName);
-      
-      // Save to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedPlayer', JSON.stringify(player));
-      }
-    }
-  };
+            if (savedPlayer) {
+                try {
+                    const player = JSON.parse(savedPlayer);
+                    setSelectedPlayer(player);
+                    setSearchTerm(player.fullName);
+                } catch (error) {
+                    console.error('Error loading saved player:', error);
+                    localStorage.removeItem('selectedPlayer');
+                }
+            }
 
-  return (
-    <div className='min-h-screen bg-gray-50 p-6'>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
+            if (savedStat) {
+                setSelectedStat(savedStat);
+            }
+        }
+    }, []);
+
+    const handleStatSelect = (statKey: string) => {
+        if (selectedStat !== statKey) {
+            setSelectedStat(statKey);
+
+            // Save selected stat to localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('selectedStat', statKey);
+            }
+        }
+    };
+
+    const handleFiltersChange = (newFilters: FilterOptions) => {
+        setFilters(newFilters);
+    };
+
+    const handleTop10PlayerSelect = (playerName: string) => {
+        // Find the player by name
+        const player = players.find((p) => p.fullName === playerName);
+        if (player) {
+            setSelectedPlayer(player);
+            setSearchTerm(player.fullName);
+
+            // Save to localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('selectedPlayer', JSON.stringify(player));
+            }
+        }
+    };
+
+    return (
+        <div className='min-h-screen bg-gray-50 p-6'>
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
             .force-black-text {
               color: #000000 !important;
             }
@@ -131,59 +133,61 @@ const PlayerStatsApp = () => {
               overflow: hidden;
             }
           `,
-        }}
-      />
-      <div className='mx-10'>
-        <h1 className='text-3xl font-bold mb-8 force-black-text'>
-          Player Stats Dashboard
-        </h1>
-
-        {/* Top section with sidebar and main content */}
-        <div className='flex flex-col lg:flex-row gap-6 mb-6 lg:items-stretch'>
-          {/* Left Sidebar - Search and Filters */}
-          <div className='w-full lg:w-80 flex-shrink-0'>
-            <SearchBar
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              onPlayerSelect={handlePlayerSelect}
-              filteredPlayers={searchFilteredPlayers}
-              showDropdown={showDropdown}
-              onShowDropdownChange={setShowDropdown}
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              totalPlayers={players.length}
-              filteredPlayerCount={filteredPlayerPool.length}
+                }}
             />
-          </div>
+            <div className='mx-10'>
+                <h1 className='text-3xl font-bold mb-8 force-black-text'>
+                    Player Stats Dashboard
+                </h1>
 
-          {/* Main Content Area */}
-          <div className='flex-1 flex flex-col lg:flex-row gap-6'>
-            <StatsTable
-              selectedPlayer={selectedPlayer}
-              selectedStat={selectedStat}
-              onStatSelect={handleStatSelect}
-              allPlayers={players}
-              filters={filters}
-            />
+                {/* Top section with sidebar and main content */}
+                <div className='flex flex-col lg:flex-row gap-6 mb-6 lg:items-stretch'>
+                    {/* Left Sidebar - Search and Filters */}
+                    <div className='w-full lg:w-80 flex-shrink-0'>
+                        <SearchBar
+                            searchTerm={searchTerm}
+                            onSearchChange={handleSearchChange}
+                            onPlayerSelect={handlePlayerSelect}
+                            filteredPlayers={searchFilteredPlayers}
+                            showDropdown={showDropdown}
+                            onShowDropdownChange={setShowDropdown}
+                            filters={filters}
+                            onFiltersChange={handleFiltersChange}
+                            totalPlayers={players.length}
+                            filteredPlayerCount={filteredPlayerPool.length}
+                        />
+                    </div>
 
-            {/* Top 10 Side Panel */}
-            <div className='w-full lg:w-80 flex-shrink-0'>
-              <Top10Panel
-                selectedStat={selectedStat}
-                selectedPlayer={selectedPlayer}
-                playerData={playerData}
-                filters={filters}
-                onPlayerSelect={handleTop10PlayerSelect}
-              />
+                    {/* Main Content Area */}
+                    <div className='flex-1 flex flex-col lg:flex-row gap-6'>
+                        <StatsTable
+                            selectedPlayer={selectedPlayer}
+                            selectedStat={selectedStat}
+                            onStatSelect={handleStatSelect}
+                            allPlayers={players}
+                            filters={filters}
+                        />
+
+                        {/* Top 10 Side Panel */}
+                        <div className='w-full lg:w-80 flex-shrink-0'>
+                            <Top10Panel
+                                selectedStat={selectedStat}
+                                selectedPlayer={selectedPlayer}
+                                playerData={playerData}
+                                filters={filters}
+                                onPlayerSelect={handleTop10PlayerSelect}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Events Section - Full width at bottom */}
+                {selectedPlayer && (
+                    <EventsSection selectedPlayer={selectedPlayer} />
+                )}
             </div>
-          </div>
         </div>
-
-        {/* Events Section - Full width at bottom */}
-        {selectedPlayer && <EventsSection selectedPlayer={selectedPlayer} />}
-      </div>
-    </div>
-  );
+    );
 };
 
 export default PlayerStatsApp;
