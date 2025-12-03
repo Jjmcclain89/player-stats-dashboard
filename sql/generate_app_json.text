@@ -121,9 +121,20 @@ player_stats AS (
     ) AS winning_drafts_pct
   FROM player_events
   GROUP BY player_id, first_name, last_name
+),
+player_qualifications AS (
+  SELECT 
+    player_id,
+    EXISTS(
+      SELECT 1 
+      FROM notable_qualifications nq 
+      WHERE nq.player_id = ps.player_id 
+      AND nq.event_id = 12
+    ) as wc31_qualification
+  FROM player_stats ps
 )
 
--- Main SELECT: Build JSON with players data only (no top_10 section, no ranks)
+-- Main SELECT: Build JSON with players data including WC31 qualification
 SELECT json_build_object(
   'players', (
     SELECT json_object_agg(
@@ -132,20 +143,46 @@ SELECT json_build_object(
         'player_info', json_build_object(
           'first_name', ps.first_name,
           'last_name', ps.last_name,
-          'full_name', ps.first_name || ' ' || ps.last_name
+          'full_name', ps.first_name || ' ' || ps.last_name,
+          'wc31_qualification', COALESCE(pq.wc31_qualification, false)
         ),
         'events', (
           SELECT json_object_agg(
             'entry_' || pe.event_number,
             json_build_object(
               'event_code', pe.event_name,
-              'event_id', pe.event_id,
-              'date', pe.date,
               'format', pe.format,
+              'event_id', pe.event_id,
+              'finish', pe.finish,
+              'summary', pe.summary,
               'deck', pe.deck,
-              'notes', pe.notes,
+              'day2', pe.day2,
+              'top8', pe.top8,
+              'in_contention', pe.in_contention,
               'record', pe.overall_record,
-              'finish', pe.finish
+              'limited_wins', pe.limited_wins,
+              'limited_losses', pe.limited_losses,
+              'limited_draws', pe.limited_draws,
+              'num_drafts', pe.num_drafts,
+              'positive_drafts', pe.positive_drafts,
+              'negative_drafts', pe.negative_drafts,
+              'trophy_drafts', pe.trophy_drafts,
+              'no_win_drafts', pe.no_win_drafts,
+              'constructed_wins', pe.constructed_wins,
+              'constructed_losses', pe.constructed_losses,
+              'constructed_draws', pe.constructed_draws,
+              'day1_wins', pe.day1_wins,
+              'day1_losses', pe.day1_losses,
+              'day1_draws', pe.day1_draws,
+              'day2_wins', pe.day2_wins,
+              'day2_losses', pe.day2_losses,
+              'day2_draws', pe.day2_draws,
+              'day3_wins', pe.day3_wins,
+              'day3_losses', pe.day3_losses,
+              'day3_draws', pe.day3_draws,
+              'win_streak', pe.win_streak,
+              'loss_streak', pe.loss_streak,
+              'streak5', pe.streak5
             )
           )
           FROM player_events pe
@@ -194,5 +231,6 @@ SELECT json_build_object(
       )
     )
     FROM player_stats ps
+    LEFT JOIN player_qualifications pq ON ps.player_id = pq.player_id
   )
 ) AS result;
