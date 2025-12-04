@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import playerDataJson from '../data/data.json';
-import { SearchBar } from './SearchBar';
+import { SearchBar, normalizeText } from './SearchBar';
 import { StatsTable } from './StatsTable';
 import { EventsSection } from './EventsSection';
 import { Top10Panel } from './Top10Panel';
@@ -33,11 +33,12 @@ const PlayerStatsApp = () => {
         return applyFilters(players, filters);
     }, [players, filters]);
 
-    // Filter players based on search term (from the filtered pool)
+    // Filter players based on search term (from the filtered pool) with accent-insensitive matching
     const searchFilteredPlayers = useMemo(() => {
         if (!searchTerm) return [];
+        const normalizedSearch = normalizeText(searchTerm);
         return filteredPlayerPool.filter((player) =>
-            player.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+            normalizeText(player.fullName).includes(normalizedSearch)
         );
     }, [filteredPlayerPool, searchTerm]);
 

@@ -16,6 +16,14 @@ interface SearchBarProps {
   filteredPlayerCount: number;
 }
 
+// Helper function to normalize text by removing accents - EXPORTED
+export const normalizeText = (text: string): string => {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
 const SearchBar: React.FC<SearchBarProps> = ({
   searchTerm,
   onSearchChange,
@@ -212,8 +220,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
             {/* Filter Info */}
             <div className='mt-3 pt-3 border-t border-gray-200'>
-              <p className='text-xs text-gray-600 text-right
-'>
+              <p className='text-xs text-gray-600 text-right'>
                 {filteredPlayerCount} players
               </p>
             </div>
