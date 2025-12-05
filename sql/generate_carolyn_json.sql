@@ -44,6 +44,11 @@ WITH player_events AS (
   FROM players p
   JOIN results r ON p.id = r.player_id
   JOIN events e ON r.event_id = e.id
+  WHERE p.id IN (
+    SELECT player_id 
+    FROM notable_qualifications 
+    WHERE event_id = 12
+  )
 ),
 player_stats AS (
   SELECT 
@@ -77,10 +82,11 @@ player_stats AS (
     SUM(negative_drafts) as losing_drafts,
     SUM(trophy_drafts) as trophy_drafts,
     SUM(streak5) as streaks_5,
-	MAX(win_streak) as max_win_streak,
-	MAX(loss_streak) as max_loss_streak
+    MAX(win_streak) as max_win_streak,
+    MAX(loss_streak) as max_loss_streak
   FROM player_events
   GROUP BY player_id, first_name, last_name
+  HAVING COUNT(*) >= 3
 )
 SELECT json_agg(
   json_build_object(
@@ -100,9 +106,9 @@ SELECT json_agg(
           'notes', pe.notes,
           'finish', pe.finish,
           'record', pe.overall_record,
-		  'win_streak', pe.win_streak,
-		  'loss_streak', pe.loss_streak,
-		  'trophy_drafts', trophy_drafts
+          'win_streak', pe.win_streak,
+          'loss_streak', pe.loss_streak,
+          'trophy_drafts', trophy_drafts
         ) ORDER BY pe.date
       )
       FROM player_events pe
@@ -181,8 +187,8 @@ SELECT json_agg(
         END, 2
       ),
       'trophy_drafts', ps.trophy_drafts,
-	  'max_win_streak', ps.max_win_streak,
-	  'max_loss_streak', ps.max_loss_streak,
+      'max_win_streak', ps.max_win_streak,
+      'max_loss_streak', ps.max_loss_streak,
       '5streaks', ps.streaks_5
     )
   )
