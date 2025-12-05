@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { Player, PlayerDataStructure, FilterOptions } from '../shared/types';
 import { getStatDisplayName } from '../shared/utils';
 import {
-  calculateTop10,
+  sortPlayers,
   calculatePlayerRank,
   applyFilters,
   isRankableStat,
@@ -38,12 +38,13 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
     return applyFilters(allPlayers, filters);
   }, [allPlayers, filters]);
 
-  // Calculate Top 10 for selected stat
-  const top10Rankings = useMemo(() => {
+  // Sort filtered players and take top 10
+  const top10Players = useMemo(() => {
     if (!selectedStat || !isRankableStat(selectedStat)) {
       return [];
     }
-    return calculateTop10(filteredPlayers, selectedStat);
+    const sortedPlayers = sortPlayers(filteredPlayers, selectedStat);
+    return sortedPlayers.slice(0, 10);
   }, [filteredPlayers, selectedStat]);
 
   // Calculate selected player's rank
@@ -143,18 +144,21 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
       </div>
 
       {/* Rankings List */}
-      {top10Rankings.length === 0 ? (
+      {top10Players.length === 0 ? (
         <p className='text-gray-500 text-center text-sm'>
           No players match the current filters
         </p>
       ) : (
         <div className='space-y-1'>
-          {top10Rankings.map((entry) => {
-            const isSelectedPlayer = selectedPlayer?.fullName === entry.player_full_name;
+          {top10Players.map((player, index) => {
+            const rank = calculatePlayerRank(top10Players, player, selectedStat)?.rank;
+            const isSelectedPlayer = selectedPlayer?.fullName === player.fullName;
+            const statValue = player.data.stats[selectedStat as keyof typeof player.data.stats].value;
+            
             return (
               <div
-                key={entry.rank}
-                onClick={() => onPlayerSelect(entry.player_full_name)}
+                key={player.id}
+                onClick={() => onPlayerSelect(player.fullName)}
                 className={`flex justify-between items-center py-1 px-3 rounded border-l-4 cursor-pointer transition-colors ${
                   isSelectedPlayer
                     ? 'bg-yellow-50 border-yellow-500 hover:bg-yellow-100'
@@ -165,16 +169,16 @@ const Top10Panel: React.FC<Top10PanelProps> = ({
                   <span className={`font-bold w-6 text-sm ${
                     isSelectedPlayer ? 'text-yellow-700' : 'text-gray-600'
                   }`}>
-                    #{entry.rank}
+                    #{rank}
                   </span>
                   <span className='force-black-text font-medium text-sm'>
-                    {entry.player_full_name}
+                    {player.fullName}
                   </span>
                 </div>
                 <span className='force-black-text font-bold text-sm'>
                   {selectedStat.includes('pct')
-                    ? `${entry.stat_value}%`
-                    : entry.stat_value}
+                    ? `${statValue}%`
+                    : statValue}
                 </span>
               </div>
             );
