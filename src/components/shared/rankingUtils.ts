@@ -37,7 +37,7 @@ export const applyFilters = (
     }
 
     // Worlds Players Only filter
-    if (filters.worldsPlayersOnly && !player.data.player_info.wc31_qualification) {
+    if (filters.EclPlayersOnly && !player.data.player_info.ecl_qualification) {
       return false;
     }
 

@@ -41,82 +41,82 @@ WITH player_events AS (
     r.overall_record,
     ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY e.date) as event_number
   FROM players p
-  JOIN results r ON p.id = r.player_id
-  JOIN events e ON r.event_id = e.id
+  LEFT JOIN results r ON p.id = r.player_id
+  LEFT JOIN events e ON r.event_id = e.id
 ),
 player_stats AS (
   SELECT 
     player_id,
     first_name,
     last_name,
-    COUNT(*) as total_events,
+    COUNT(event_id) as total_events,
     SUM(CASE WHEN day2 = true THEN 1 ELSE 0 END) as day2s,
     SUM(CASE WHEN in_contention = true THEN 1 ELSE 0 END) as in_contentions,
     SUM(CASE WHEN top8 = true THEN 1 ELSE 0 END) as top8s,
-    SUM(day1_wins + day2_wins + day3_wins) as overall_wins,
-    SUM(day1_losses + day2_losses + day3_losses) as overall_losses,
-    SUM(day1_draws + day2_draws + day3_draws) as overall_draws,
-    SUM(limited_wins) as limited_wins,
-    SUM(limited_losses) as limited_losses,
-    SUM(limited_draws) as limited_draws,
-    SUM(constructed_wins) as constructed_wins,
-    SUM(constructed_losses) as constructed_losses,
-    SUM(constructed_draws) as constructed_draws,
-    SUM(day1_wins) as day1_wins,
-    SUM(day1_losses) as day1_losses,
-    SUM(day1_draws) as day1_draws,
-    SUM(day2_wins) as day2_wins,
-    SUM(day2_losses) as day2_losses,
-    SUM(day2_draws) as day2_draws,
-    SUM(day3_wins) as day3_wins,
-    SUM(day3_losses) as day3_losses,
-    SUM(day3_draws) as day3_draws,
-    SUM(num_drafts) as drafts,
-    SUM(positive_drafts) as winning_drafts,
-    SUM(negative_drafts) as losing_drafts,
-    SUM(trophy_drafts) as trophy_drafts,
-    SUM(streak5) as streaks_5,
+    COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0) as overall_wins,
+    COALESCE(SUM(day1_losses + day2_losses + day3_losses), 0) as overall_losses,
+    COALESCE(SUM(day1_draws + day2_draws + day3_draws), 0) as overall_draws,
+    COALESCE(SUM(limited_wins), 0) as limited_wins,
+    COALESCE(SUM(limited_losses), 0) as limited_losses,
+    COALESCE(SUM(limited_draws), 0) as limited_draws,
+    COALESCE(SUM(constructed_wins), 0) as constructed_wins,
+    COALESCE(SUM(constructed_losses), 0) as constructed_losses,
+    COALESCE(SUM(constructed_draws), 0) as constructed_draws,
+    COALESCE(SUM(day1_wins), 0) as day1_wins,
+    COALESCE(SUM(day1_losses), 0) as day1_losses,
+    COALESCE(SUM(day1_draws), 0) as day1_draws,
+    COALESCE(SUM(day2_wins), 0) as day2_wins,
+    COALESCE(SUM(day2_losses), 0) as day2_losses,
+    COALESCE(SUM(day2_draws), 0) as day2_draws,
+    COALESCE(SUM(day3_wins), 0) as day3_wins,
+    COALESCE(SUM(day3_losses), 0) as day3_losses,
+    COALESCE(SUM(day3_draws), 0) as day3_draws,
+    COALESCE(SUM(num_drafts), 0) as drafts,
+    COALESCE(SUM(positive_drafts), 0) as winning_drafts,
+    COALESCE(SUM(negative_drafts), 0) as losing_drafts,
+    COALESCE(SUM(trophy_drafts), 0) as trophy_drafts,
+    COALESCE(SUM(streak5), 0) as streaks_5,
     -- Calculate win percentages (no ranks)
     ROUND(
       CASE 
-        WHEN (SUM(day1_wins + day2_wins + day3_wins) + SUM(day1_losses + day2_losses + day3_losses) + SUM(day1_draws + day2_draws + day3_draws)) = 0 THEN 0
-        ELSE SUM(day1_wins + day2_wins + day3_wins)::numeric / (SUM(day1_wins + day2_wins + day3_wins) + SUM(day1_losses + day2_losses + day3_losses) + SUM(day1_draws + day2_draws + day3_draws)) * 100
+        WHEN (COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0) + COALESCE(SUM(day1_losses + day2_losses + day3_losses), 0) + COALESCE(SUM(day1_draws + day2_draws + day3_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0)::numeric / (COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0) + COALESCE(SUM(day1_losses + day2_losses + day3_losses), 0) + COALESCE(SUM(day1_draws + day2_draws + day3_draws), 0)) * 100
       END, 2
     ) AS overall_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(limited_wins) + SUM(limited_losses) + SUM(limited_draws)) = 0 THEN 0
-        ELSE SUM(limited_wins)::numeric / (SUM(limited_wins) + SUM(limited_losses) + SUM(limited_draws)) * 100
+        WHEN (COALESCE(SUM(limited_wins), 0) + COALESCE(SUM(limited_losses), 0) + COALESCE(SUM(limited_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(limited_wins), 0)::numeric / (COALESCE(SUM(limited_wins), 0) + COALESCE(SUM(limited_losses), 0) + COALESCE(SUM(limited_draws), 0)) * 100
       END, 2
     ) AS limited_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(constructed_wins) + SUM(constructed_losses) + SUM(constructed_draws)) = 0 THEN 0
-        ELSE SUM(constructed_wins)::numeric / (SUM(constructed_wins) + SUM(constructed_losses) + SUM(constructed_draws)) * 100
+        WHEN (COALESCE(SUM(constructed_wins), 0) + COALESCE(SUM(constructed_losses), 0) + COALESCE(SUM(constructed_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(constructed_wins), 0)::numeric / (COALESCE(SUM(constructed_wins), 0) + COALESCE(SUM(constructed_losses), 0) + COALESCE(SUM(constructed_draws), 0)) * 100
       END, 2
     ) AS constructed_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(day1_wins) + SUM(day1_losses) + SUM(day1_draws)) = 0 THEN 0
-        ELSE SUM(day1_wins)::numeric / (SUM(day1_wins) + SUM(day1_losses) + SUM(day1_draws)) * 100
+        WHEN (COALESCE(SUM(day1_wins), 0) + COALESCE(SUM(day1_losses), 0) + COALESCE(SUM(day1_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(day1_wins), 0)::numeric / (COALESCE(SUM(day1_wins), 0) + COALESCE(SUM(day1_losses), 0) + COALESCE(SUM(day1_draws), 0)) * 100
       END, 2
     ) AS day1_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(day2_wins) + SUM(day2_losses) + SUM(day2_draws)) = 0 THEN 0
-        ELSE SUM(day2_wins)::numeric / (SUM(day2_wins) + SUM(day2_losses) + SUM(day2_draws)) * 100
+        WHEN (COALESCE(SUM(day2_wins), 0) + COALESCE(SUM(day2_losses), 0) + COALESCE(SUM(day2_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(day2_wins), 0)::numeric / (COALESCE(SUM(day2_wins), 0) + COALESCE(SUM(day2_losses), 0) + COALESCE(SUM(day2_draws), 0)) * 100
       END, 2
     ) AS day2_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(day3_wins) + SUM(day3_losses) + SUM(day3_draws)) = 0 THEN 0
-        ELSE SUM(day3_wins)::numeric / (SUM(day3_wins) + SUM(day3_losses) + SUM(day3_draws)) * 100
+        WHEN (COALESCE(SUM(day3_wins), 0) + COALESCE(SUM(day3_losses), 0) + COALESCE(SUM(day3_draws), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(day3_wins), 0)::numeric / (COALESCE(SUM(day3_wins), 0) + COALESCE(SUM(day3_losses), 0) + COALESCE(SUM(day3_draws), 0)) * 100
       END, 2
     ) AS day3_win_pct,
     ROUND(
       CASE 
-        WHEN (SUM(positive_drafts) + SUM(negative_drafts)) = 0 THEN 0
-        ELSE SUM(positive_drafts)::numeric / (SUM(positive_drafts) + SUM(negative_drafts)) * 100
+        WHEN (COALESCE(SUM(positive_drafts), 0) + COALESCE(SUM(negative_drafts), 0)) = 0 THEN 0
+        ELSE COALESCE(SUM(positive_drafts), 0)::numeric / (COALESCE(SUM(positive_drafts), 0) + COALESCE(SUM(negative_drafts), 0)) * 100
       END, 2
     ) AS winning_drafts_pct
   FROM player_events
@@ -129,12 +129,12 @@ player_qualifications AS (
       SELECT 1 
       FROM notable_qualifications nq 
       WHERE nq.player_id = ps.player_id 
-      AND nq.event_id = 12
-    ) as wc31_qualification
+      AND nq.event_id = 13
+    ) as ecl_qualification
   FROM player_stats ps
 )
 
--- Main SELECT: Build JSON with players data including WC31 qualification
+-- Main SELECT: Build JSON with players data including ECL qualification
 SELECT json_build_object(
   'players', (
     SELECT json_object_agg(
@@ -144,9 +144,9 @@ SELECT json_build_object(
           'first_name', ps.first_name,
           'last_name', ps.last_name,
           'full_name', ps.first_name || ' ' || ps.last_name,
-          'wc31_qualification', COALESCE(pq.wc31_qualification, false)
+          'ecl_qualification', COALESCE(pq.ecl_qualification, false)
         ),
-        'events', (
+        'events', COALESCE((
           SELECT json_object_agg(
             'entry_' || pe.event_number,
             json_build_object(
@@ -187,7 +187,8 @@ SELECT json_build_object(
           )
           FROM player_events pe
           WHERE pe.player_id = ps.player_id
-        ),
+          AND pe.event_id IS NOT NULL
+        ), '{}'::json),
         'stats', json_build_object(
           'events', json_build_object('value', ps.total_events),
           'day2s', json_build_object('value', ps.day2s),

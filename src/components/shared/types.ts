@@ -3,7 +3,7 @@ export interface PlayerInfo {
   first_name?: string;
   last_name?: string;
   full_name: string;
-  wc31_qualification?: boolean;
+  ecl_qualification?: boolean;
 }
 
 export interface StatValue {
@@ -126,7 +126,7 @@ export interface FilterOptions {
   maxEvents?: number;
   minTop8s?: number;
   hasTop8?: boolean;
-  worldsPlayersOnly?: boolean;
+  EclPlayersOnly?: boolean;
   formats?: string[];
   startDate?: string;
   endDate?: string;

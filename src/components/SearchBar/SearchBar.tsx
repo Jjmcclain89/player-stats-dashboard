@@ -127,27 +127,27 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <div
                 onClick={() =>
                   handleFilterChange({
-                    worldsPlayersOnly: !filters.worldsPlayersOnly || undefined,
+                    EclPlayersOnly: !filters.EclPlayersOnly || undefined,
                   })
                 }
                 className='flex items-center justify-between cursor-pointer'
               >
                 <span className={`font-medium text-base ${
-                  filters.worldsPlayersOnly ? 'text-purple-600' : 'text-gray-700'
+                  filters.EclPlayersOnly ? 'text-purple-600' : 'text-gray-700'
                 }`}>
-                  Worlds Mode
+                  ECL Players Only
                 </span>
                 
                 {/* Toggle Switch */}
                 <div className='relative'>
                   <div
                     className={`w-12 h-6 rounded-full transition-colors ${
-                      filters.worldsPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
+                      filters.EclPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
                     }`}
                   >
                     <div
                       className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
-                        filters.worldsPlayersOnly
+                        filters.EclPlayersOnly
                           ? 'translate-x-6'
                           : 'translate-x-0'
                       }`}
