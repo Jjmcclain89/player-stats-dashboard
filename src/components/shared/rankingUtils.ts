@@ -1,5 +1,5 @@
 // shared/rankingUtils.ts
-import { Player, Top10Entry, FilterOptions } from './types';
+import { Player, FilterOptions } from './types';
 
 /**
  * Apply filters to the player pool
@@ -37,7 +37,7 @@ export const applyFilters = (
     }
 
     // Worlds Players Only filter
-    if (filters.worldsPlayersOnly && !player.data.player_info.wc31_qualification) {
+    if (filters.EclPlayersOnly && !player.data.player_info.ecl_qualification) {
       return false;
     }
 
@@ -80,38 +80,28 @@ export const applyFilters = (
 };
 
 /**
- * Calculate Top 10 rankings for a given stat from a filtered player pool
+ * Sort players by a given stat (descending, higher is better)
  */
-export const calculateTop10 = (
+export const sortPlayers = (
   players: Player[],
   statKey: string
-): Top10Entry[] => {
+): Player[] => {
   // Filter out players without valid stat values and sort
-  const rankedPlayers = players
+  return players
     .filter((player) => {
       const statValue = player.data.stats[statKey as keyof typeof player.data.stats]?.value;
       return statValue !== null && statValue !== undefined;
     })
-    .map((player) => ({
-      player_id: player.id,
-      player_full_name: player.fullName,
-      stat_value: player.data.stats[statKey as keyof typeof player.data.stats].value,
-    }))
     .sort((a, b) => {
+      const aValue = a.data.stats[statKey as keyof typeof a.data.stats].value;
+      const bValue = b.data.stats[statKey as keyof typeof b.data.stats].value;
+      
       // For percentage stats and numeric stats, sort descending (higher is better)
-      if (typeof a.stat_value === 'number' && typeof b.stat_value === 'number') {
-        return b.stat_value - a.stat_value;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return bValue - aValue;
       }
       return 0;
     });
-
-  // Take top 10 and assign ranks
-  return rankedPlayers.slice(0, 10).map((player, index) => ({
-    rank: index + 1,
-    player_full_name: player.player_full_name,
-    player_id: player.player_id,
-    stat_value: player.stat_value,
-  }));
 };
 
 /**
@@ -149,8 +139,16 @@ export const calculatePlayerRank = (
 
   if (playerIndex < 0) return null;
 
+  // Calculate rank by counting players with better stat values
+  let rank = 1;
+  for (let i = 0; i < playerIndex; i++) {
+    if (rankedPlayers[i].stat_value !== rankedPlayers[playerIndex].stat_value) {
+      rank = rank + 1;
+    }
+  }
+
   return {
-    rank: playerIndex + 1,
+    rank: rank,
     totalPlayers: rankedPlayers.length,
   };
 };
