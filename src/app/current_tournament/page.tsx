@@ -58,7 +58,7 @@ const HeaderCell = React.memo(({
   onSort: (key: string) => void;
 }) => (
   <th
-    className={`px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer transition-colors ${
+    className={`px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer transition-colors border-r border-gray-200 ${
       hoveredCol === idx ? 'bg-blue-100' : ''
     }`}
     onClick={() => onSort(colKey)}
@@ -263,7 +263,7 @@ export default function CurrentTournamentPage() {
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-3 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer transition-colors w-40"
+                    className="px-3 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer transition-colors w-40 border-r border-gray-200"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ export default function CurrentTournamentPage() {
                     className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
                     <td
-                      className="player-name-cell px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40"
+                      className="player-name-cell px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40 border-r border-gray-200"
                       style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
                     >
                       {player.player_info.full_name}
@@ -307,7 +307,7 @@ export default function CurrentTournamentPage() {
                       return (
                         <td
                           key={key}
-                          className={`stat-cell px-3 py-3 text-center text-gray-900 transition-colors whitespace-nowrap`}
+                          className={`stat-cell px-3 py-3 text-center text-gray-900 transition-colors whitespace-nowrap border-r border-gray-200`}
                           onMouseEnter={() => isMounted && setHoveredCol(colIdx)}
                           onMouseLeave={() => isMounted && setHoveredCol(null)}
                         >
