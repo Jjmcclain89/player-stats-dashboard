@@ -143,44 +143,39 @@ const PlayerStatsApp = () => {
                     </h1>
                 </div>
 
-                {/* Top section with sidebar and main content */}
-                <div className='flex flex-col lg:flex-row gap-6 mb-6 lg:items-stretch'>
-                    {/* Left Sidebar - Search and Filters */}
+                {/* Search and Filters - Full width at top */}
+                <SearchBar
+                    searchTerm={searchTerm}
+                    onSearchChange={handleSearchChange}
+                    onPlayerSelect={handlePlayerSelect}
+                    filteredPlayers={searchFilteredPlayers}
+                    showDropdown={showDropdown}
+                    onShowDropdownChange={setShowDropdown}
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                    totalPlayers={players.length}
+                    filteredPlayerCount={filteredPlayerPool.length}
+                />
+
+                {/* Main Content Area - Stats Table and Top 10 Panel */}
+                <div className='flex flex-col lg:flex-row gap-6 mb-6'>
+                    <StatsTable
+                        selectedPlayer={selectedPlayer}
+                        selectedStat={selectedStat}
+                        onStatSelect={handleStatSelect}
+                        allPlayers={players}
+                        filters={filters}
+                    />
+
+                    {/* Top 10 Side Panel */}
                     <div className='w-full lg:w-80 flex-shrink-0'>
-                        <SearchBar
-                            searchTerm={searchTerm}
-                            onSearchChange={handleSearchChange}
-                            onPlayerSelect={handlePlayerSelect}
-                            filteredPlayers={searchFilteredPlayers}
-                            showDropdown={showDropdown}
-                            onShowDropdownChange={setShowDropdown}
-                            filters={filters}
-                            onFiltersChange={handleFiltersChange}
-                            totalPlayers={players.length}
-                            filteredPlayerCount={filteredPlayerPool.length}
-                        />
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className='flex-1 flex flex-col lg:flex-row gap-6'>
-                        <StatsTable
-                            selectedPlayer={selectedPlayer}
+                        <Top10Panel
                             selectedStat={selectedStat}
-                            onStatSelect={handleStatSelect}
-                            allPlayers={players}
+                            selectedPlayer={selectedPlayer}
+                            playerData={playerData}
                             filters={filters}
+                            onPlayerSelect={handleTop10PlayerSelect}
                         />
-
-                        {/* Top 10 Side Panel */}
-                        <div className='w-full lg:w-80 flex-shrink-0'>
-                            <Top10Panel
-                                selectedStat={selectedStat}
-                                selectedPlayer={selectedPlayer}
-                                playerData={playerData}
-                                filters={filters}
-                                onPlayerSelect={handleTop10PlayerSelect}
-                            />
-                        </div>
                     </div>
                 </div>
 

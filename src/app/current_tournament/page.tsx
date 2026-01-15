@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { PlayerData, PlayerStats, PlayerInfo, PlayerDataStructure, Player } from '@/components/shared/types';
-import { calculatePlayerRank } from '@/components/shared/rankingUtils';
+import { PlayerData, PlayerStats, PlayerInfo, PlayerDataStructure, Player, FilterOptions } from '@/components/shared/types';
+import { calculatePlayerRank, applyFilters } from '@/components/shared/rankingUtils';
+import TournamentSearchBar, { normalizeText } from '@/components/SearchBar/TournamentSearchBar';
 import playerDataJson from '@/data/data.json';
 
 interface PlayerWithRankings extends PlayerData {
@@ -83,31 +84,63 @@ export default function CurrentTournamentPage() {
   const [tableWidth, setTableWidth] = React.useState(3000);
   const [hoveredCol, setHoveredCol] = React.useState<number | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({});
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const qualifiedPlayers = useMemo(() => {
+  // Get all ECL qualified players as Player type
+  const allQualifiedPlayers = useMemo(() => {
     const data = playerDataJson as unknown as PlayerDataStructure;
-
-    // Filter qualified players and convert to Player type
-    const qualified: Player[] = Object.entries(data.players)
+    return Object.entries(data.players)
       .filter(([_, player]) => player.player_info.ecl_qualification === true)
       .map(([id, playerData]) => ({
         id,
         fullName: playerData.player_info.full_name,
         data: playerData,
       }));
+  }, []);
 
-    // Pre-calculate rankings for all stats (more efficient)
+  // Apply filters to get filtered player pool
+  const filteredPlayerPool = useMemo(() => {
+    return applyFilters(allQualifiedPlayers, filters);
+  }, [allQualifiedPlayers, filters]);
+
+  // Apply search filter for dropdown suggestions
+  const searchFilteredPlayers = useMemo(() => {
+    if (!searchTerm) return [];
+    const normalizedSearch = normalizeText(searchTerm);
+    return filteredPlayerPool.filter((player) =>
+      normalizeText(player.fullName).includes(normalizedSearch)
+    );
+  }, [filteredPlayerPool, searchTerm]);
+
+  // Determine which players to show in the table
+  const playersToDisplay = useMemo(() => {
+    if (searchTerm) {
+      // If searching, only show matching players
+      const normalizedSearch = normalizeText(searchTerm);
+      return filteredPlayerPool.filter((player) =>
+        normalizeText(player.fullName).includes(normalizedSearch)
+      );
+    }
+    // Otherwise show all filtered players
+    return filteredPlayerPool;
+  }, [filteredPlayerPool, searchTerm]);
+
+  // Calculate rankings and build final data based on players to display
+  const qualifiedPlayers = useMemo(() => {
+    // Pre-calculate rankings for all stats (more efficient) based on players to display
     const rankingsMap = new Map<string, Map<string, number>>();
 
     STAT_CONFIGS.forEach(({ key }) => {
       const statKey = key as keyof PlayerStats;
 
       // Get all players with valid values, sorted
-      const sorted = qualified
+      const sorted = playersToDisplay
         .map(player => ({
           id: player.id,
           value: player.data.stats[statKey]?.value ?? 0,
@@ -129,7 +162,7 @@ export default function CurrentTournamentPage() {
     });
 
     // Build players with rankings
-    const playersWithRankings: PlayerWithRankings[] = qualified.map(player => {
+    const playersWithRankings: PlayerWithRankings[] = playersToDisplay.map(player => {
       const rankings: PlayerWithRankings['rankings'] = {} as any;
 
       STAT_CONFIGS.forEach(({ key }) => {
@@ -145,7 +178,7 @@ export default function CurrentTournamentPage() {
     });
 
     return playersWithRankings;
-  }, []);
+  }, [playersToDisplay]);
 
   useEffect(() => {
     // Update the top scrollbar width to match the table width
@@ -205,6 +238,20 @@ export default function CurrentTournamentPage() {
     return 'th';
   }
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handlePlayerSelect = (player: Player) => {
+    // Optional: could navigate to player page or do something else
+    setSearchTerm(player.fullName);
+    setShowDropdown(false);
+  };
+
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <style>{`
@@ -224,9 +271,22 @@ export default function CurrentTournamentPage() {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               Lorwyn Eclipse - Qualified Players
             </h1>
-            <p className="text-gray-600">
-              {qualifiedPlayers.length} qualified players
-            </p>
+          </div>
+
+          {/* Search and Filters */}
+          <div style={{ maxWidth: 'fit-content' }}>
+            <TournamentSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              onPlayerSelect={handlePlayerSelect}
+              filteredPlayers={searchFilteredPlayers}
+              showDropdown={showDropdown}
+              onShowDropdownChange={setShowDropdown}
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              totalPlayers={allQualifiedPlayers.length}
+              filteredPlayerCount={filteredPlayerPool.length}
+            />
           </div>
         </div>
 

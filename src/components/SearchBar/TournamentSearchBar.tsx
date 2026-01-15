@@ -1,9 +1,9 @@
-// SearchBar/SearchBar.tsx
-import React, { useState } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+// TournamentSearchBar.tsx - Simplified search bar for tournament page (no ECL toggle)
+import React from 'react';
+import { Search, X } from 'lucide-react';
 import { Player, FilterOptions } from '../shared/types';
 
-interface SearchBarProps {
+interface TournamentSearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onPlayerSelect: (player: Player) => void;
@@ -16,7 +16,6 @@ interface SearchBarProps {
   filteredPlayerCount: number;
 }
 
-// Helper function to normalize text by removing accents - EXPORTED
 export const normalizeText = (text: string): string => {
   return text
     .normalize('NFD')
@@ -24,7 +23,7 @@ export const normalizeText = (text: string): string => {
     .toLowerCase();
 };
 
-const SearchBar: React.FC<SearchBarProps> = ({
+const TournamentSearchBar: React.FC<TournamentSearchBarProps> = ({
   searchTerm,
   onSearchChange,
   onPlayerSelect,
@@ -52,14 +51,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const clearFilters = () => {
     onFiltersChange({});
+    onSearchChange('');
   };
 
-  const hasActiveFilters = Object.keys(filters).length > 0;
+  const hasActiveFilters = Object.keys(filters).length > 0 || searchTerm !== '';
 
   return (
     <div className='bg-white rounded-lg shadow-md p-4 mb-6' style={{ width: 'fit-content' }}>
       <div className='relative'>
-        {/* Horizontal layout: Search bar, ECL toggle, and filters */}
+        {/* Horizontal layout: Search bar and filters (no ECL toggle) */}
         <div className='flex items-center gap-3'>
           {/* Search Bar */}
           <div className='relative' style={{ width: '200px' }}>
@@ -81,39 +81,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 <X className='w-4 h-4' />
               </button>
             )}
-          </div>
-
-          {/* ECL Players Only Toggle */}
-          <div
-            onClick={() =>
-              handleFilterChange({
-                EclPlayersOnly: !filters.EclPlayersOnly || undefined,
-              })
-            }
-            className='flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
-          >
-            <span className={`font-medium text-sm whitespace-nowrap ${
-              filters.EclPlayersOnly ? 'text-purple-600' : 'text-gray-700'
-            }`}>
-              ECL Players
-            </span>
-
-            {/* Toggle Switch */}
-            <div className='relative'>
-              <div
-                className={`w-11 h-6 rounded-full transition-colors ${
-                  filters.EclPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
-              >
-                <div
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
-                    filters.EclPlayersOnly
-                      ? 'translate-x-5'
-                      : 'translate-x-0'
-                  }`}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Min Events */}
@@ -195,7 +162,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
         {/* Player Dropdown */}
         {showDropdown && filteredPlayers.length > 0 && (
-          <div className='absolute z-10 left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto' style={{ maxWidth: '400px' }}>
+          <div className='absolute z-50 left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto' style={{ maxWidth: '400px' }}>
             {filteredPlayers.map((player) => (
               <div
                 key={player.id}
@@ -212,4 +179,4 @@ const SearchBar: React.FC<SearchBarProps> = ({
   );
 };
 
-export default SearchBar;
+export default TournamentSearchBar;

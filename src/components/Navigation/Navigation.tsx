@@ -49,7 +49,10 @@ const Navigation = () => {
             ))}
 
             {/* Events Dropdown */}
-            <div className="relative">
+            <div
+              className="relative"
+              onMouseLeave={() => setIsEventsDropdownOpen(false)}
+            >
               <button
                 onClick={() => setIsEventsDropdownOpen(!isEventsDropdownOpen)}
                 onMouseEnter={() => setIsEventsDropdownOpen(true)}
@@ -64,10 +67,13 @@ const Navigation = () => {
               </button>
 
               {isEventsDropdownOpen && (
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-slate-700 rounded-md shadow-lg py-1 max-h-96 overflow-y-auto"
-                  onMouseLeave={() => setIsEventsDropdownOpen(false)}
-                >
+                <>
+                  {/* Invisible bridge to prevent gap issues */}
+                  <div className="absolute left-0 top-full w-48 h-2" />
+
+                  <div
+                    className="absolute left-0 mt-2 w-48 bg-slate-700 rounded-md shadow-lg py-1 max-h-96 overflow-y-auto z-50"
+                  >
                   {eventCodes.map((eventCode) => (
                     <Link
                       key={eventCode}
@@ -83,6 +89,7 @@ const Navigation = () => {
                     </Link>
                   ))}
                 </div>
+                </>
               )}
             </div>
           </div>
