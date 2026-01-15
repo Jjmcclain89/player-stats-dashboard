@@ -35,3 +35,4 @@ yarn-error.log*
 next-env.d.ts
 script.py
 src_structure.json
+.claude/settings.local.json

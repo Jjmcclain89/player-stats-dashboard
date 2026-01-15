@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { PlayerData, PlayerStats, PlayerInfo, PlayerDataStructure, Player } from '@/components/shared/types';
 import { calculatePlayerRank } from '@/components/shared/rankingUtils';
 import playerDataJson from '@/data/data.json';
@@ -20,7 +19,7 @@ interface PlayerWithRankings extends PlayerData {
     day3_win_pct: number;
     limited_win_pct: number;
     drafts: number;
-    winning_drafts_pct: number;
+    winning_drafts: number;
     trophy_drafts: number;
     '5streaks': number;
   };
@@ -28,18 +27,18 @@ interface PlayerWithRankings extends PlayerData {
 
 const STAT_CONFIGS = [
   { key: 'events', label: 'Total Events', isPercentage: false },
+  { key: 'top8s', label: 'Top 8s', isPercentage: false },
   { key: 'in_contentions', label: 'In Contentions', isPercentage: false },
+  { key: 'day2s', label: 'Day 2s', isPercentage: false },
   { key: 'overall_win_pct', label: 'Overall Win %', isPercentage: true },
   { key: 'constructed_win_pct', label: 'Constructed Win %', isPercentage: true },
-  { key: 'day2_win_pct', label: 'Day 2 Win %', isPercentage: true },
-  { key: 'day2s', label: 'Day 2s', isPercentage: false },
-  { key: 'top8s', label: 'Top 8s', isPercentage: false },
   { key: 'limited_win_pct', label: 'Limited Win %', isPercentage: true },
   { key: 'day1_win_pct', label: 'Day 1 Win %', isPercentage: true },
+  { key: 'day2_win_pct', label: 'Day 2 Win %', isPercentage: true },
   { key: 'day3_win_pct', label: 'Day 3 Win %', isPercentage: true },
   { key: 'drafts', label: 'Total Drafts', isPercentage: false },
-  { key: 'winning_drafts_pct', label: 'Winning Drafts %', isPercentage: true },
   { key: 'trophy_drafts', label: 'Trophy Drafts', isPercentage: false },
+  { key: 'winning_drafts', label: 'Winning Drafts', isPercentage: false },
   { key: '5streaks', label: '5+ Win Streaks', isPercentage: false },
 ];
 
@@ -50,6 +49,9 @@ export default function CurrentTournamentPage() {
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'events', direction: 'desc' });
+  const tableRef = React.useRef<HTMLTableElement>(null);
+  const [tableWidth, setTableWidth] = React.useState(3000);
+  const [hoveredCell, setHoveredCell] = React.useState<{ rowId: string; colKey: string } | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -103,6 +105,13 @@ export default function CurrentTournamentPage() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Update the top scrollbar width to match the table width
+    if (tableRef.current) {
+      setTableWidth(tableRef.current.scrollWidth);
+    }
+  }, [qualifiedPlayers]);
 
   function handleSort(key: string) {
     let direction: 'asc' | 'desc' = 'desc';
@@ -164,34 +173,53 @@ export default function CurrentTournamentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-[1800px] mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Pro Tour ECL - Qualified Players
-              </h1>
-              <p className="text-gray-600">
-                {qualifiedPlayers.length} qualified players
-              </p>
-            </div>
-            <Link 
-              href="/"
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              ← Back to Dashboard
-            </Link>
+          <div className="mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Lorwyn Eclipse - Qualified Players
+            </h1>
+            <p className="text-gray-600">
+              {qualifiedPlayers.length} qualified players
+            </p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          {/* Top scrollbar */}
+          <div 
+            className="overflow-x-auto overflow-y-hidden"
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              const tableContainer = target.nextElementSibling as HTMLDivElement;
+              if (tableContainer) {
+                tableContainer.scrollLeft = target.scrollLeft;
+              }
+            }}
+          >
+            <div style={{ width: 'max-content', height: '1px' }}>
+              {/* Invisible spacer to create scrollbar width */}
+              <div style={{ width: `${tableWidth}px` }}></div>
+            </div>
+          </div>
+          
+          {/* Table with bottom scrollbar */}
+          <div 
+            className="overflow-x-auto"
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              const topScrollbar = target.previousElementSibling as HTMLDivElement;
+              if (topScrollbar) {
+                topScrollbar.scrollLeft = target.scrollLeft;
+              }
+            }}
+          >
+            <table ref={tableRef} className="w-full text-sm">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th 
-                    className="px-4 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200"
+                  <th
+                    className="px-3 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer transition-colors hover:bg-blue-100 w-40"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-2">
@@ -202,30 +230,20 @@ export default function CurrentTournamentPage() {
                     </div>
                   </th>
                   {STAT_CONFIGS.map(({ key, label }) => (
-                    <React.Fragment key={key}>
-                      <th 
-                        className="px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer hover:bg-gray-200"
-                        onClick={() => handleSort(key)}
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          {label}
-                          {sortConfig?.key === key && (
-                            <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                          )}
-                        </div>
-                      </th>
-                      <th 
-                        className="px-3 py-3 text-center font-semibold text-gray-600 bg-gray-50 cursor-pointer hover:bg-gray-200"
-                        onClick={() => handleSort(`rank_${key}`)}
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          Rank
-                          {sortConfig?.key === `rank_${key}` && (
-                            <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                          )}
-                        </div>
-                      </th>
-                    </React.Fragment>
+                    <th
+                      key={key}
+                      className={`px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer transition-colors ${
+                        hoveredCell?.colKey === key ? 'bg-blue-100' : 'hover:bg-blue-100'
+                      }`}
+                      onClick={() => handleSort(key)}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        {label}
+                        {sortConfig?.key === key && (
+                          <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -235,8 +253,12 @@ export default function CurrentTournamentPage() {
                     key={player.playerId}
                     className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
-                    <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 z-10" 
-                        style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}>
+                    <td
+                      className={`px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40 ${
+                        hoveredCell?.rowId === player.playerId ? 'bg-blue-100' : ''
+                      }`}
+                      style={{ backgroundColor: hoveredCell?.rowId === player.playerId ? undefined : (idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)') }}
+                    >
                       {player.player_info.full_name}
                     </td>
                     {STAT_CONFIGS.map(({ key, isPercentage }) => {
@@ -244,23 +266,26 @@ export default function CurrentTournamentPage() {
                       const rankKey = key as keyof PlayerWithRankings['rankings'];
                       const value = player.stats[statKey]?.value ?? 0;
                       const rank = player.rankings[rankKey];
-                      
+
                       return (
-                        <React.Fragment key={key}>
-                          <td className="px-3 py-3 text-center text-gray-900">
-                            {formatValue(value, isPercentage)}
-                          </td>
-                          <td className="px-3 py-3 text-center bg-gray-50 text-gray-700">
-                            <span className={`inline-block ${
-                              rank === 1 ? 'text-yellow-600 font-bold' :
-                              rank === 2 ? 'text-gray-500 font-semibold' :
-                              rank === 3 ? 'text-orange-600 font-semibold' :
-                              ''
-                            }`}>
-                              {rank}{getRankingSuffix(rank)}
-                            </span>
-                          </td>
-                        </React.Fragment>
+                        <td
+                          key={key}
+                          className={`px-3 py-3 text-center text-gray-900 transition-colors ${
+                            hoveredCell?.rowId === player.playerId && hoveredCell?.colKey === key ? 'bg-blue-100' : ''
+                          }`}
+                          onMouseEnter={() => setHoveredCell({ rowId: player.playerId, colKey: key })}
+                          onMouseLeave={() => setHoveredCell(null)}
+                        >
+                          {formatValue(value, isPercentage)}{' '}
+                          <span className={`${
+                            rank === 1 ? 'text-yellow-600 font-bold' :
+                            rank === 2 ? 'text-gray-500 font-semibold' :
+                            rank === 3 ? 'text-orange-600 font-semibold' :
+                            'text-gray-500'
+                          }`}>
+                            ({rank}{getRankingSuffix(rank)})
+                          </span>
+                        </td>
                       );
                     })}
                   </tr>

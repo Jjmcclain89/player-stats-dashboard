@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import playerDataJson from '../data/data.json';
 import { SearchBar, normalizeText } from './SearchBar';
 import { StatsTable } from './StatsTable';
@@ -138,16 +137,10 @@ const PlayerStatsApp = () => {
                 }}
             />
             <div className='mx-10'>
-                <div className='flex items-center justify-between mb-8'>
+                <div className='mb-8'>
                     <h1 className='text-3xl font-bold force-black-text'>
                         Player Stats Dashboard
                     </h1>
-                    <Link 
-                        href="/current_tournament"
-                        className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
-                    >
-                        View ECL Page
-                    </Link>
                 </div>
 
                 {/* Top section with sidebar and main content */}

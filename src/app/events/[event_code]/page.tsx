@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import playerDataJson from '../../../data/data.json';
 import { PlayerDataStructure } from '../../../components/shared/types';
 import { getEventResults, EventDetails } from '../../../components/shared/eventUtils';
@@ -74,10 +72,6 @@ const EventPageClient = () => {
     };
   }, [richMode, eventDetails]);
 
-  const handleBackClick = () => {
-    router.push('/');
-  };
-
   const handlePlayerClick = (playerId: string, playerName: string) => {
     // Find the full player data
     const fullPlayerData = playerData.players[playerId];
@@ -131,15 +125,6 @@ const EventPageClient = () => {
           }}
         />
         <div className='max-w-6xl mx-auto'>
-          {/* Back Button */}
-          <button
-            onClick={handleBackClick}
-            className='inline-flex items-center gap-2 mb-6 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-          >
-            <ArrowLeft className='w-4 h-4' />
-            Back to Player Stats
-          </button>
-
           <h1 className='text-3xl font-bold mb-8 force-black-text'>
             Event Not Found
           </h1>
@@ -174,15 +159,6 @@ const EventPageClient = () => {
       />
       
       <div className={richMode ? 'min-w-max' : 'max-w-6xl mx-auto'}>
-        {/* Back Button */}
-        <button
-          onClick={handleBackClick}
-          className='inline-flex items-center gap-2 mb-6 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-        >
-          <ArrowLeft className='w-4 h-4' />
-          Back to Player Stats
-        </button>
-
         <h1 className='text-3xl font-bold mb-8 force-black-text'>
           {eventDetails.eventCode} - Event Results
         </h1>
