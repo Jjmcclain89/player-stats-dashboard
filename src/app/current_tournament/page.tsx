@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { PlayerData, PlayerStats, PlayerInfo, PlayerDataStructure, Player } from '@/components/shared/types';
 import { calculatePlayerRank } from '@/components/shared/rankingUtils';
 import playerDataJson from '@/data/data.json';
@@ -42,68 +42,109 @@ const STAT_CONFIGS = [
   { key: '5streaks', label: '5+ Win Streaks', isPercentage: false },
 ];
 
+const HeaderCell = React.memo(({
+  colKey,
+  label,
+  idx,
+  hoveredCol,
+  sortConfig,
+  onSort
+}: {
+  colKey: string;
+  label: string;
+  idx: number;
+  hoveredCol: number | null;
+  sortConfig: any;
+  onSort: (key: string) => void;
+}) => (
+  <th
+    className={`px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer transition-colors ${
+      hoveredCol === idx ? 'bg-blue-100' : ''
+    }`}
+    onClick={() => onSort(colKey)}
+  >
+    <div className="flex items-center justify-center gap-1">
+      {label}
+      {sortConfig?.key === colKey && (
+        <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+      )}
+    </div>
+  </th>
+));
+
+HeaderCell.displayName = 'HeaderCell';
+
 export default function CurrentTournamentPage() {
-  const [qualifiedPlayers, setQualifiedPlayers] = useState<PlayerWithRankings[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'events', direction: 'desc' });
   const tableRef = React.useRef<HTMLTableElement>(null);
   const [tableWidth, setTableWidth] = React.useState(3000);
-  const [hoveredCell, setHoveredCell] = React.useState<{ rowId: string; colKey: string } | null>(null);
+  const [hoveredCol, setHoveredCol] = React.useState<number | null>(null);
+  const [isMounted, setIsMounted] = React.useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const data = playerDataJson as unknown as PlayerDataStructure;
-        
-        console.log('Total players in data:', Object.keys(data.players).length);
-        
-        // Check first few players to see their ecl_qualification status
-        const samplePlayers = Object.entries(data.players).slice(0, 5);
-        console.log('Sample players:', samplePlayers.map(([id, p]) => ({
-          id,
-          name: p.player_info?.full_name,
-          ecl_qualification: p.player_info?.ecl_qualification
-        })));
-        
-        // Filter qualified players and convert to Player type
-        const qualified: Player[] = Object.entries(data.players)
-          .filter(([_, player]) => player.player_info.ecl_qualification === true)
-          .map(([id, playerData]) => ({
-            id,
-            fullName: playerData.player_info.full_name,
-            data: playerData,
-          }));
+    setIsMounted(true);
+  }, []);
 
-        console.log('Qualified players found:', qualified.length);
+  const qualifiedPlayers = useMemo(() => {
+    const data = playerDataJson as unknown as PlayerDataStructure;
 
-        // Calculate rankings for each player using the shared utility
-        const playersWithRankings: PlayerWithRankings[] = qualified.map(player => {
-          const rankings: PlayerWithRankings['rankings'] = {} as any;
-          
-          STAT_CONFIGS.forEach(({ key }) => {
-            const rankData = calculatePlayerRank(qualified, player, key);
-            rankings[key as keyof PlayerWithRankings['rankings']] = rankData?.rank ?? 999;
-          });
+    // Filter qualified players and convert to Player type
+    const qualified: Player[] = Object.entries(data.players)
+      .filter(([_, player]) => player.player_info.ecl_qualification === true)
+      .map(([id, playerData]) => ({
+        id,
+        fullName: playerData.player_info.full_name,
+        data: playerData,
+      }));
 
-          return {
-            ...player.data,
-            playerId: player.id,
-            rankings,
-          };
-        });
-        
-        setQualifiedPlayers(playersWithRankings);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setLoading(false);
+    // Pre-calculate rankings for all stats (more efficient)
+    const rankingsMap = new Map<string, Map<string, number>>();
+
+    STAT_CONFIGS.forEach(({ key }) => {
+      const statKey = key as keyof PlayerStats;
+
+      // Get all players with valid values, sorted
+      const sorted = qualified
+        .map(player => ({
+          id: player.id,
+          value: player.data.stats[statKey]?.value ?? 0,
+        }))
+        .filter(item => item.value !== null && item.value !== undefined)
+        .sort((a, b) => b.value - a.value);
+
+      // Assign ranks (handling ties)
+      const playerRanks = new Map<string, number>();
+      let currentRank = 1;
+      for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i].value !== sorted[i - 1].value) {
+          currentRank = i + 1;
+        }
+        playerRanks.set(sorted[i].id, currentRank);
       }
-    }
 
-    loadData();
+      rankingsMap.set(key, playerRanks);
+    });
+
+    // Build players with rankings
+    const playersWithRankings: PlayerWithRankings[] = qualified.map(player => {
+      const rankings: PlayerWithRankings['rankings'] = {} as any;
+
+      STAT_CONFIGS.forEach(({ key }) => {
+        const playerRanks = rankingsMap.get(key);
+        rankings[key as keyof PlayerWithRankings['rankings']] = playerRanks?.get(player.id) ?? 999;
+      });
+
+      return {
+        ...player.data,
+        playerId: player.id,
+        rankings,
+      };
+    });
+
+    return playersWithRankings;
   }, []);
 
   useEffect(() => {
@@ -164,16 +205,19 @@ export default function CurrentTournamentPage() {
     return 'th';
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading tournament data...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <style>{`
+        /* Highlight player name when hovering any stat cell in that row */
+        tr:has(.stat-cell:hover) .player-name-cell {
+          background-color: rgb(219, 234, 254) !important;
+        }
+
+        /* Highlight hovered cell itself */
+        .stat-cell:hover {
+          background-color: rgb(219, 234, 254) !important;
+        }
+      `}</style>
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="mb-4">
@@ -219,7 +263,7 @@ export default function CurrentTournamentPage() {
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-3 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer transition-colors hover:bg-blue-100 w-40"
+                    className="px-3 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10 cursor-pointer transition-colors w-40"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-2">
@@ -229,21 +273,16 @@ export default function CurrentTournamentPage() {
                       )}
                     </div>
                   </th>
-                  {STAT_CONFIGS.map(({ key, label }) => (
-                    <th
+                  {STAT_CONFIGS.map(({ key, label }, idx) => (
+                    <HeaderCell
                       key={key}
-                      className={`px-3 py-3 text-center font-semibold text-gray-900 cursor-pointer transition-colors ${
-                        hoveredCell?.colKey === key ? 'bg-blue-100' : 'hover:bg-blue-100'
-                      }`}
-                      onClick={() => handleSort(key)}
-                    >
-                      <div className="flex items-center justify-center gap-1">
-                        {label}
-                        {sortConfig?.key === key && (
-                          <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
+                      colKey={key}
+                      label={label}
+                      idx={idx}
+                      hoveredCol={hoveredCol}
+                      sortConfig={sortConfig}
+                      onSort={handleSort}
+                    />
                   ))}
                 </tr>
               </thead>
@@ -254,14 +293,12 @@ export default function CurrentTournamentPage() {
                     className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
                     <td
-                      className={`px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40 ${
-                        hoveredCell?.rowId === player.playerId ? 'bg-blue-100' : ''
-                      }`}
-                      style={{ backgroundColor: hoveredCell?.rowId === player.playerId ? undefined : (idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)') }}
+                      className="player-name-cell px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40"
+                      style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
                     >
                       {player.player_info.full_name}
                     </td>
-                    {STAT_CONFIGS.map(({ key, isPercentage }) => {
+                    {STAT_CONFIGS.map(({ key, isPercentage }, colIdx) => {
                       const statKey = key as keyof PlayerStats;
                       const rankKey = key as keyof PlayerWithRankings['rankings'];
                       const value = player.stats[statKey]?.value ?? 0;
@@ -270,11 +307,9 @@ export default function CurrentTournamentPage() {
                       return (
                         <td
                           key={key}
-                          className={`px-3 py-3 text-center text-gray-900 transition-colors ${
-                            hoveredCell?.rowId === player.playerId && hoveredCell?.colKey === key ? 'bg-blue-100' : ''
-                          }`}
-                          onMouseEnter={() => setHoveredCell({ rowId: player.playerId, colKey: key })}
-                          onMouseLeave={() => setHoveredCell(null)}
+                          className={`stat-cell px-3 py-3 text-center text-gray-900 transition-colors whitespace-nowrap`}
+                          onMouseEnter={() => isMounted && setHoveredCol(colIdx)}
+                          onMouseLeave={() => isMounted && setHoveredCol(null)}
                         >
                           {formatValue(value, isPercentage)}{' '}
                           <span className={`${
