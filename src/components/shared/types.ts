@@ -113,9 +113,18 @@ export interface Top10Entry {
   stat_value: any;
 }
 
+// Master event from events section
+export interface AllEvent {
+  id: number;
+  name: string;
+  date: string;
+  format: string;
+}
+
 // Updated data structure without pre-calculated top_10
 export interface PlayerDataStructure {
   players: { [key: string]: PlayerData };
+  events: { [key: string]: AllEvent };
   // top_10 field removed - will be calculated dynamically
 }
 

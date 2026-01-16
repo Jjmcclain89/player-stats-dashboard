@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import EventsTableView from './EventsTableView';
 import EventsCardView from './EventsCardView';
 import { Player } from '../shared/types';
+import playerDataJson from '../../data/data.json';
+import { PlayerDataStructure } from '../shared/types';
 
 interface EventsSectionProps {
   selectedPlayer: Player;
@@ -10,6 +12,7 @@ interface EventsSectionProps {
 
 const EventsSection: React.FC<EventsSectionProps> = ({ selectedPlayer }) => {
   const [richMode, setRichMode] = useState(false);
+  const [seasonSort, setSeasonSort] = useState<'recent' | 'oldest'>('recent');
 
   // Load richMode preference from localStorage on mount
   useEffect(() => {
@@ -25,19 +28,48 @@ const EventsSection: React.FC<EventsSectionProps> = ({ selectedPlayer }) => {
   const handleToggleRichMode = () => {
     const newRichMode = !richMode;
     setRichMode(newRichMode);
-    
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('richMode', newRichMode.toString());
     }
   };
 
   const events = Object.values(selectedPlayer.data.events);
+  const playerData = playerDataJson as unknown as PlayerDataStructure;
 
   return (
     <div className='bg-white rounded-lg shadow-md p-6'>
       <div className='flex justify-between items-center mb-6'>
-        <h3 className='text-xl font-bold force-black-text'>Events History</h3>
-        
+        <div className='flex items-center gap-4'>
+          <h3 className='text-xl font-bold force-black-text'>Events History</h3>
+
+          {/* Sort Buttons - Only show in card view */}
+          {!richMode && (
+            <div className='flex gap-2'>
+              <button
+                onClick={() => setSeasonSort('recent')}
+                className={`px-3 py-1 text-sm rounded-md font-medium transition-colors ${
+                  seasonSort === 'recent'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Newest First
+              </button>
+              <button
+                onClick={() => setSeasonSort('oldest')}
+                className={`px-3 py-1 text-sm rounded-md font-medium transition-colors ${
+                  seasonSort === 'oldest'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Oldest First
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Rich Mode Toggle */}
         <div className='flex items-center gap-3'>
           <span className='text-sm font-medium force-black-text'>
@@ -64,7 +96,11 @@ const EventsSection: React.FC<EventsSectionProps> = ({ selectedPlayer }) => {
       {richMode ? (
         <EventsTableView events={events} />
       ) : (
-        <EventsCardView events={events} />
+        <EventsCardView
+          playerEvents={selectedPlayer.data.events}
+          allEvents={playerData.events}
+          seasonSort={seasonSort}
+        />
       )}
     </div>
   );
