@@ -78,7 +78,7 @@ const EventsCardView: React.FC<EventsCardViewProps> = ({ playerEvents, allEvents
         <div key={season.year}>
           {/* Season Header */}
           <h4 className='text-lg font-bold force-black-text mb-4'>
-            Season '{season.year.slice(2)}
+            Season &apos;{season.year.slice(2)}
           </h4>
 
           {/* Events Grid */}
