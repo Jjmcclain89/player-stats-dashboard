@@ -68,20 +68,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, playerEvent, participated 
             <h4 className='text-base font-bold force-black-text line-clamp-1'>
               {event.name}
             </h4>
-            <div className='flex items-center gap-3 flex-shrink-0'>
-              {playerEvent?.record && (
-                <span className='force-black-text font-medium text-sm pr-4 line-clamp-1'>
-                  {playerEvent.record}
-                </span>
-              )}
-              {playerEvent?.finish && (
-                <span className='force-black-text font-medium text-sm line-clamp-1'>
-                  {Number(playerEvent.finish) === 1 && '🏆 '}
-                  {Number(playerEvent.finish) >= 2 && Number(playerEvent.finish) <= 8 && '🥉 '}
-                  {formatFinish(playerEvent.finish)}
-                </span>
-              )}
-            </div>
+            {playerEvent?.record && (
+              <span className='force-black-text font-medium text-sm line-clamp-1'>
+                {playerEvent.record}
+              </span>
+            )}
+            {playerEvent?.finish && (
+              <span className='force-black-text font-medium text-sm line-clamp-1'>
+                {Number(playerEvent.finish) === 1 && '🏆 '}
+                {Number(playerEvent.finish) >= 2 && Number(playerEvent.finish) <= 8 && '🥉 '}
+                {formatFinish(playerEvent.finish)}
+              </span>
+            )}
           </div>
         </div>
 

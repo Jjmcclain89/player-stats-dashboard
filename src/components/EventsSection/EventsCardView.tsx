@@ -82,9 +82,9 @@ const EventsCardView: React.FC<EventsCardViewProps> = ({ playerEvents, allEvents
           </h4>
 
           {/* Events Grid */}
-          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+          <div className='flex gap-4'>
             {season.events.map((eventWithStatus) => (
-              <div key={eventWithStatus.event.id} className='max-w-sm mx-auto w-full'>
+              <div key={eventWithStatus.event.id} style={{ flex: '0 1 256px', minWidth: '0' }}>
                 <EventCard
                   event={eventWithStatus.event}
                   playerEvent={eventWithStatus.playerEvent}

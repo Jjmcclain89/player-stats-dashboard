@@ -14,6 +14,7 @@ interface SearchBarProps {
   onFiltersChange: (filters: FilterOptions) => void;
   totalPlayers: number;
   filteredPlayerCount: number;
+  showEclToggle?: boolean;
 }
 
 // Helper function to normalize text by removing accents - EXPORTED
@@ -35,6 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onFiltersChange,
   totalPlayers,
   filteredPlayerCount,
+  showEclToggle = true,
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value);
@@ -52,12 +54,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const clearFilters = () => {
     onFiltersChange({});
+    onSearchChange('');
   };
 
-  const hasActiveFilters = Object.keys(filters).length > 0;
+  const hasActiveFilters = Object.keys(filters).length > 0 || searchTerm !== '';
 
   return (
-    <div className='bg-white rounded-lg shadow-md p-4 mb-6' style={{ width: 'fit-content' }}>
+    <div className='bg-white rounded-lg shadow-md p-4 mb-6' style={{ display: 'inline-block' }}>
       <div className='relative'>
         {/* Horizontal layout: Search bar, ECL toggle, and filters */}
         <div className='flex items-center gap-3'>
@@ -83,43 +86,45 @@ const SearchBar: React.FC<SearchBarProps> = ({
             )}
           </div>
 
-          {/* ECL Players Only Toggle */}
-          <div
-            onClick={() =>
-              handleFilterChange({
-                EclPlayersOnly: !filters.EclPlayersOnly || undefined,
-              })
-            }
-            className='flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
-          >
-            <span className={`font-medium text-sm whitespace-nowrap ${
-              filters.EclPlayersOnly ? 'text-purple-600' : 'text-gray-700'
-            }`}>
-              ECL Players
-            </span>
+          {/* ECL Players Only Toggle - Conditionally rendered */}
+          {showEclToggle && (
+            <div
+              onClick={() =>
+                handleFilterChange({
+                  EclPlayersOnly: !filters.EclPlayersOnly || undefined,
+                })
+              }
+              className='flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+            >
+              <span className={`font-medium text-sm whitespace-nowrap ${
+                filters.EclPlayersOnly ? 'text-purple-600' : 'text-gray-700'
+              }`}>
+                ECL Players
+              </span>
 
-            {/* Toggle Switch */}
-            <div className='relative'>
-              <div
-                className={`w-11 h-6 rounded-full transition-colors ${
-                  filters.EclPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
-              >
+              {/* Toggle Switch */}
+              <div className='relative'>
                 <div
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
-                    filters.EclPlayersOnly
-                      ? 'translate-x-5'
-                      : 'translate-x-0'
+                  className={`w-11 h-6 rounded-full transition-colors ${
+                    filters.EclPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
                   }`}
-                />
+                >
+                  <div
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
+                      filters.EclPlayersOnly
+                        ? 'translate-x-5'
+                        : 'translate-x-0'
+                    }`}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Min Events */}
           <div className='flex items-center gap-2'>
             <label className='text-sm font-medium text-gray-700 whitespace-nowrap'>
-              Min Events
+              Events
             </label>
             <input
               type='number'
@@ -139,7 +144,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           {/* Min Day 2s */}
           <div className='flex items-center gap-2'>
             <label className='text-sm font-medium text-gray-700 whitespace-nowrap'>
-              Min Day 2s
+              Day 2s
             </label>
             <input
               type='number'
@@ -159,7 +164,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           {/* Min Top 8s */}
           <div className='flex items-center gap-2'>
             <label className='text-sm font-medium text-gray-700 whitespace-nowrap'>
-              Min Top 8s
+              Top 8s
             </label>
             <input
               type='number'
@@ -182,20 +187,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </div>
 
           {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className='px-3 py-2.5 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1 whitespace-nowrap'
-            >
-              <X className='w-4 h-4' />
-              Clear
-            </button>
-          )}
+          <button
+            onClick={clearFilters}
+            className={`px-3 py-2.5 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1 whitespace-nowrap ${
+              hasActiveFilters ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <X className='w-4 h-4' />
+            Clear
+          </button>
         </div>
 
         {/* Player Dropdown */}
         {showDropdown && filteredPlayers.length > 0 && (
-          <div className='absolute z-10 left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto' style={{ maxWidth: '400px' }}>
+          <div className='absolute z-50 left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto' style={{ maxWidth: '400px' }}>
             {filteredPlayers.map((player) => (
               <div
                 key={player.id}

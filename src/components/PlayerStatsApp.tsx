@@ -15,6 +15,7 @@ const PlayerStatsApp = () => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedStat, setSelectedStat] = useState<string | null>(null);
     const [filters, setFilters] = useState<FilterOptions>({});
+    const [showRankings, setShowRankings] = useState(true);
     const [playerData] = useState(
         playerDataJson as unknown as PlayerDataStructure
     );
@@ -136,7 +137,7 @@ const PlayerStatsApp = () => {
           `,
                 }}
             />
-            <div className='mx-10'>
+            <div className='max-w-screen-lg'>
                 <div className='mb-8'>
                     <h1 className='text-3xl font-bold force-black-text'>
                         Player Stats Dashboard

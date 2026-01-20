@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { PlayerData, PlayerStats, PlayerInfo, PlayerDataStructure, Player, FilterOptions } from '@/components/shared/types';
 import { calculatePlayerRank, applyFilters } from '@/components/shared/rankingUtils';
-import TournamentSearchBar, { normalizeText } from '@/components/SearchBar/TournamentSearchBar';
+import { SearchBar, normalizeText } from '@/components/SearchBar';
 import playerDataJson from '@/data/data.json';
 
 interface PlayerWithRankings extends PlayerData {
@@ -302,20 +302,19 @@ export default function CurrentTournamentPage() {
           </div>
 
           {/* Search and Filters */}
-          <div style={{ maxWidth: 'fit-content' }}>
-            <TournamentSearchBar
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              onPlayerSelect={handlePlayerSelect}
-              filteredPlayers={searchFilteredPlayers}
-              showDropdown={showDropdown}
-              onShowDropdownChange={setShowDropdown}
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              totalPlayers={allQualifiedPlayers.length}
-              filteredPlayerCount={filteredPlayerPool.length}
-            />
-          </div>
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            onPlayerSelect={handlePlayerSelect}
+            filteredPlayers={searchFilteredPlayers}
+            showDropdown={showDropdown}
+            onShowDropdownChange={setShowDropdown}
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            totalPlayers={allQualifiedPlayers.length}
+            filteredPlayerCount={filteredPlayerPool.length}
+            showEclToggle={false}
+          />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
