@@ -134,7 +134,7 @@ player_qualifications AS (
   FROM player_stats ps
 )
 
--- Main SELECT: Build JSON with players data including ECL qualification
+-- Main SELECT: Build JSON with players data and events
 SELECT json_build_object(
   'players', (
     SELECT json_object_agg(
@@ -156,7 +156,6 @@ SELECT json_build_object(
               'finish', pe.finish,
               'summary', pe.summary,
               'deck', pe.deck,
-              'notes', pe.notes,
               'day2', pe.day2,
               'top8', pe.top8,
               'in_contention', pe.in_contention,
@@ -234,5 +233,17 @@ SELECT json_build_object(
     )
     FROM player_stats ps
     LEFT JOIN player_qualifications pq ON ps.player_id = pq.player_id
+  ),
+  'events', (
+    SELECT json_object_agg(
+      'entry_' || e.id,
+      json_build_object(
+        'id', e.id,
+        'name', e.name,
+        'date', e.date,
+        'format', e.format
+      )
+    )
+    FROM events e
   )
 ) AS result;
