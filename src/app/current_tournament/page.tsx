@@ -294,9 +294,9 @@ export default function CurrentTournamentPage() {
         }
       `}</style>
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+        <div className="mb-8 mx-auto">
           <div className="mb-4">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Lorwyn Eclipse - Qualified Players
             </h1>
           </div>
