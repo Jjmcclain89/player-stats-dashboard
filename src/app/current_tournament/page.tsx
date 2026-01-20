@@ -406,6 +406,42 @@ export default function CurrentTournamentPage() {
                       const value = player.stats[statKey]?.value ?? 0;
                       const rank = player.rankings[rankKey];
 
+                      // Determine if this stat needs a record displayed
+                      const needsRecord = [
+                        'overall_win_pct',
+                        'constructed_win_pct',
+                        'limited_win_pct',
+                        'day1_win_pct',
+                        'day2_win_pct',
+                        'day3_win_pct'
+                      ].includes(key);
+
+                      // Get the corresponding record field
+                      let record = '';
+                      if (needsRecord) {
+                        // For day1, day2, day3 - calculate from wins/losses/draws
+                        if (key === 'day1_win_pct') {
+                          const wins = player.stats.day1_wins?.value ?? 0;
+                          const losses = player.stats.day1_losses?.value ?? 0;
+                          const draws = player.stats.day1_draws?.value ?? 0;
+                          record = `${wins}-${losses}-${draws}`;
+                        } else if (key === 'day2_win_pct') {
+                          const wins = player.stats.day2_wins?.value ?? 0;
+                          const losses = player.stats.day2_losses?.value ?? 0;
+                          const draws = player.stats.day2_draws?.value ?? 0;
+                          record = `${wins}-${losses}-${draws}`;
+                        } else if (key === 'day3_win_pct') {
+                          const wins = player.stats.day3_wins?.value ?? 0;
+                          const losses = player.stats.day3_losses?.value ?? 0;
+                          const draws = player.stats.day3_draws?.value ?? 0;
+                          record = `${wins}-${losses}-${draws}`;
+                        } else {
+                          // For overall, constructed, limited - use the record field from stats
+                          const recordKey = key.replace('_win_pct', '_record') as keyof PlayerStats;
+                          record = player.stats[recordKey]?.value ?? '';
+                        }
+                      }
+
                       return (
                         <td
                           key={key}
@@ -413,7 +449,10 @@ export default function CurrentTournamentPage() {
                           onMouseEnter={() => isMounted && setHoveredCol(colIdx)}
                           onMouseLeave={() => isMounted && setHoveredCol(null)}
                         >
-                          {formatValue(value, isPercentage)}{' '}
+                          <span className="font-bold">{formatValue(value, isPercentage)}</span>{' '}
+                          {needsRecord && record && (
+                            <span className="text-gray-700">{record} </span>
+                          )}
                           <span className={`${
                             rank === 1 ? 'text-yellow-600 font-bold' :
                             rank === 2 ? 'text-gray-500 font-semibold' :
