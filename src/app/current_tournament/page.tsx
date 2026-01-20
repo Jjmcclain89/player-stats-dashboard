@@ -87,10 +87,8 @@ export default function CurrentTournamentPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [focusedPlayerId, setFocusedPlayerId] = useState<string | null>(null);
+  const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
 
   // Get all ECL qualified players as Player type
   const allQualifiedPlayers = useMemo(() => {
@@ -109,7 +107,7 @@ export default function CurrentTournamentPage() {
     return applyFilters(allQualifiedPlayers, filters);
   }, [allQualifiedPlayers, filters]);
 
-  // Apply search filter for dropdown suggestions
+  // Apply search filter for dropdown suggestions only
   const searchFilteredPlayers = useMemo(() => {
     if (!searchTerm) return [];
     const normalizedSearch = normalizeText(searchTerm);
@@ -118,29 +116,24 @@ export default function CurrentTournamentPage() {
     );
   }, [filteredPlayerPool, searchTerm]);
 
-  // Determine which players to show in the table
-  const playersToDisplay = useMemo(() => {
-    if (searchTerm) {
-      // If searching, only show matching players
-      const normalizedSearch = normalizeText(searchTerm);
-      return filteredPlayerPool.filter((player) =>
-        normalizeText(player.fullName).includes(normalizedSearch)
-      );
-    }
-    // Otherwise show all filtered players
-    return filteredPlayerPool;
+  // Find exact match player for focusing
+  const exactMatchPlayer = useMemo(() => {
+    if (!searchTerm) return null;
+    const normalizedSearch = normalizeText(searchTerm);
+    return filteredPlayerPool.find((player) =>
+      normalizeText(player.fullName) === normalizedSearch
+    );
   }, [filteredPlayerPool, searchTerm]);
 
-  // Calculate rankings and build final data based on players to display
-  const qualifiedPlayers = useMemo(() => {
-    // Pre-calculate rankings for all stats (more efficient) based on players to display
-    const rankingsMap = new Map<string, Map<string, number>>();
+  // Calculate rankings based on the full filtered player pool (not affected by search)
+  const rankingsMap = useMemo(() => {
+    const rankings = new Map<string, Map<string, number>>();
 
     STAT_CONFIGS.forEach(({ key }) => {
       const statKey = key as keyof PlayerStats;
 
-      // Get all players with valid values, sorted
-      const sorted = playersToDisplay
+      // Get all players from the filtered pool (not search filtered) with valid values, sorted
+      const sorted = filteredPlayerPool
         .map(player => ({
           id: player.id,
           value: player.data.stats[statKey]?.value ?? 0,
@@ -158,10 +151,42 @@ export default function CurrentTournamentPage() {
         playerRanks.set(sorted[i].id, currentRank);
       }
 
-      rankingsMap.set(key, playerRanks);
+      rankings.set(key, playerRanks);
     });
 
-    // Build players with rankings
+    return rankings;
+  }, [filteredPlayerPool]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Update focused player when exact match is found
+  useEffect(() => {
+    if (exactMatchPlayer) {
+      setFocusedPlayerId(exactMatchPlayer.id);
+    } else if (searchTerm === '') {
+      setFocusedPlayerId(null);
+    }
+  }, [exactMatchPlayer, searchTerm]);
+
+  // Scroll to focused player row
+  useEffect(() => {
+    if (focusedPlayerId && isMounted) {
+      const rowElement = rowRefs.current.get(focusedPlayerId);
+      if (rowElement) {
+        rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [focusedPlayerId, isMounted]);
+
+  // All players are displayed (search doesn't filter anymore, just focuses)
+  const playersToDisplay = useMemo(() => {
+    return filteredPlayerPool;
+  }, [filteredPlayerPool]);
+
+  // Build final data with rankings for players to display
+  const qualifiedPlayers = useMemo(() => {
     const playersWithRankings: PlayerWithRankings[] = playersToDisplay.map(player => {
       const rankings: PlayerWithRankings['rankings'] = {} as any;
 
@@ -178,7 +203,7 @@ export default function CurrentTournamentPage() {
     });
 
     return playersWithRankings;
-  }, [playersToDisplay]);
+  }, [playersToDisplay, rankingsMap]);
 
   useEffect(() => {
     // Update the top scrollbar width to match the table width
@@ -199,7 +224,7 @@ export default function CurrentTournamentPage() {
     if (!sortConfig) return 0;
 
     const { key, direction } = sortConfig;
-    
+
     let aValue: number;
     let bValue: number;
 
@@ -240,12 +265,15 @@ export default function CurrentTournamentPage() {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+    if (!value) {
+      setFocusedPlayerId(null);
+    }
   };
 
   const handlePlayerSelect = (player: Player) => {
-    // Optional: could navigate to player page or do something else
     setSearchTerm(player.fullName);
     setShowDropdown(false);
+    setFocusedPlayerId(player.id);
   };
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
@@ -347,17 +375,32 @@ export default function CurrentTournamentPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {sortedPlayers.map((player, idx) => (
-                  <tr 
-                    key={player.playerId}
-                    className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  >
-                    <td
-                      className="player-name-cell px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40 border-r border-gray-200"
-                      style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
+                {sortedPlayers.map((player, idx) => {
+                  const isFocused = player.playerId === focusedPlayerId;
+                  return (
+                    <tr
+                      key={player.playerId}
+                      ref={(el) => {
+                        if (el) {
+                          rowRefs.current.set(player.playerId, el);
+                        } else {
+                          rowRefs.current.delete(player.playerId);
+                        }
+                      }}
+                      className={`transition-colors duration-300 ${
+                        isFocused ? 'bg-green-100' : (idx % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                      }`}
                     >
-                      {player.player_info.full_name}
-                    </td>
+                      <td
+                        className="player-name-cell px-3 py-3 font-medium text-gray-900 sticky left-0 z-10 transition-colors w-40 border-r border-gray-200"
+                        style={{
+                          backgroundColor: isFocused
+                            ? 'rgb(220, 252, 231)' // green-100
+                            : (idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)')
+                        }}
+                      >
+                        {player.player_info.full_name}
+                      </td>
                     {STAT_CONFIGS.map(({ key, isPercentage }, colIdx) => {
                       const statKey = key as keyof PlayerStats;
                       const rankKey = key as keyof PlayerWithRankings['rankings'];
@@ -383,8 +426,9 @@ export default function CurrentTournamentPage() {
                         </td>
                       );
                     })}
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
