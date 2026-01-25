@@ -31,6 +31,13 @@ const StatsTable: React.FC<StatsTableProps> = ({
     return value?.value ?? '-';
   };
 
+  // Helper to format percentage values to 1 decimal place
+  const formatPercentage = (statPath: string) => {
+    const value = getStatValue(statPath);
+    if (value === '-') return '-';
+    return `${Number(value).toFixed(1)}%`;
+  };
+
   // Helper to get rank for a stat by calculating from filtered player pool
   const getRank = (statKey: string): number | null => {
     if (!selectedPlayer) return null;
@@ -85,13 +92,13 @@ const StatsTable: React.FC<StatsTableProps> = ({
               <StatRow
                 stat1={{
                   label: 'Overall Win %',
-                  value: selectedPlayer ? `${getStatValue('overall_win_pct')}%` : '-',
+                  value: formatPercentage('overall_win_pct'),
                   key: 'overall_win_pct',
                   rank: getRank('overall_win_pct'),
                 }}
                 stat2={{
                   label: 'Limited Win %',
-                  value: selectedPlayer ? `${getStatValue('limited_win_pct')}%` : '-',
+                  value: formatPercentage('limited_win_pct'),
                   key: 'limited_win_pct',
                   rank: getRank('limited_win_pct'),
                 }}
@@ -101,13 +108,13 @@ const StatsTable: React.FC<StatsTableProps> = ({
               <StatRow
                 stat1={{
                   label: 'Constructed Win %',
-                  value: selectedPlayer ? `${getStatValue('constructed_win_pct')}%` : '-',
+                  value: formatPercentage('constructed_win_pct'),
                   key: 'constructed_win_pct',
                   rank: getRank('constructed_win_pct'),
                 }}
                 stat2={{
                   label: 'Day 1 Win %',
-                  value: selectedPlayer ? `${getStatValue('day1_win_pct')}%` : '-',
+                  value: formatPercentage('day1_win_pct'),
                   key: 'day1_win_pct',
                   rank: getRank('day1_win_pct'),
                 }}
@@ -117,13 +124,13 @@ const StatsTable: React.FC<StatsTableProps> = ({
               <StatRow
                 stat1={{
                   label: 'Day 2 Win %',
-                  value: selectedPlayer ? `${getStatValue('day2_win_pct')}%` : '-',
+                  value: formatPercentage('day2_win_pct'),
                   key: 'day2_win_pct',
                   rank: getRank('day2_win_pct'),
                 }}
                 stat2={{
                   label: 'Day 3 Win %',
-                  value: selectedPlayer ? `${getStatValue('day3_win_pct')}%` : '-',
+                  value: formatPercentage('day3_win_pct'),
                   key: 'day3_win_pct',
                   rank: getRank('day3_win_pct'),
                 }}
@@ -139,7 +146,7 @@ const StatsTable: React.FC<StatsTableProps> = ({
                 }}
                 stat2={{
                   label: 'Winning Drafts %',
-                  value: selectedPlayer ? `${getStatValue('winning_drafts_pct')}%` : '-',
+                  value: formatPercentage('winning_drafts_pct'),
                   key: 'winning_drafts_pct',
                   rank: getRank('winning_drafts_pct'),
                 }}

@@ -251,7 +251,7 @@ export default function CurrentTournamentPage() {
 
   function formatValue(value: number, isPercentage: boolean): string {
     if (isPercentage) {
-      return `${value.toFixed(2)}%`;
+      return `${value.toFixed(1)}%`;
     }
     return value.toString();
   }
