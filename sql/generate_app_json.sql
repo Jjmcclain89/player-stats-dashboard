@@ -78,46 +78,46 @@ player_stats AS (
     COALESCE(SUM(streak5), 0) as streaks_5,
     -- Calculate win percentages (no ranks)
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0) + COALESCE(SUM(day1_losses + day2_losses + day3_losses), 0) + COALESCE(SUM(day1_draws + day2_draws + day3_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0)::numeric / (COALESCE(SUM(day1_wins + day2_wins + day3_wins), 0) + COALESCE(SUM(day1_losses + day2_losses + day3_losses), 0) + COALESCE(SUM(day1_draws + day2_draws + day3_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS overall_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(limited_wins), 0) + COALESCE(SUM(limited_losses), 0) + COALESCE(SUM(limited_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(limited_wins), 0)::numeric / (COALESCE(SUM(limited_wins), 0) + COALESCE(SUM(limited_losses), 0) + COALESCE(SUM(limited_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS limited_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(constructed_wins), 0) + COALESCE(SUM(constructed_losses), 0) + COALESCE(SUM(constructed_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(constructed_wins), 0)::numeric / (COALESCE(SUM(constructed_wins), 0) + COALESCE(SUM(constructed_losses), 0) + COALESCE(SUM(constructed_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS constructed_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(day1_wins), 0) + COALESCE(SUM(day1_losses), 0) + COALESCE(SUM(day1_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(day1_wins), 0)::numeric / (COALESCE(SUM(day1_wins), 0) + COALESCE(SUM(day1_losses), 0) + COALESCE(SUM(day1_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS day1_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(day2_wins), 0) + COALESCE(SUM(day2_losses), 0) + COALESCE(SUM(day2_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(day2_wins), 0)::numeric / (COALESCE(SUM(day2_wins), 0) + COALESCE(SUM(day2_losses), 0) + COALESCE(SUM(day2_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS day2_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(day3_wins), 0) + COALESCE(SUM(day3_losses), 0) + COALESCE(SUM(day3_draws), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(day3_wins), 0)::numeric / (COALESCE(SUM(day3_wins), 0) + COALESCE(SUM(day3_losses), 0) + COALESCE(SUM(day3_draws), 0)) * 100
-      END, 2
+      END, 1
     ) AS day3_win_pct,
     ROUND(
-      CASE 
+      CASE
         WHEN (COALESCE(SUM(positive_drafts), 0) + COALESCE(SUM(negative_drafts), 0)) = 0 THEN 0
         ELSE COALESCE(SUM(positive_drafts), 0)::numeric / (COALESCE(SUM(positive_drafts), 0) + COALESCE(SUM(negative_drafts), 0)) * 100
-      END, 2
+      END, 1
     ) AS winning_drafts_pct
   FROM player_events
   GROUP BY player_id, first_name, last_name

@@ -124,67 +124,67 @@ SELECT json_agg(
       'overall_draws', ps.overall_draws,
       'overall_record', ps.overall_wins || '-' || ps.overall_losses || '-' || ps.overall_draws,
       'overall_win_pct', ROUND(
-        CASE 
-          WHEN (ps.overall_wins + ps.overall_losses + ps.overall_draws) = 0 THEN 0 
-          ELSE ps.overall_wins::numeric / (ps.overall_wins + ps.overall_losses + ps.overall_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.overall_wins + ps.overall_losses + ps.overall_draws) = 0 THEN 0
+          ELSE ps.overall_wins::numeric / (ps.overall_wins + ps.overall_losses + ps.overall_draws) * 100
+        END, 1
       ),
       'limited_wins', ps.limited_wins,
       'limited_losses', ps.limited_losses,
       'limited_draws', ps.limited_draws,
       'limited_record', ps.limited_wins || '-' || ps.limited_losses || '-' || ps.limited_draws,
       'limited_win_pct', ROUND(
-        CASE 
-          WHEN (ps.limited_wins + ps.limited_losses + ps.limited_draws) = 0 THEN 0 
-          ELSE ps.limited_wins::numeric / (ps.limited_wins + ps.limited_losses + ps.limited_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.limited_wins + ps.limited_losses + ps.limited_draws) = 0 THEN 0
+          ELSE ps.limited_wins::numeric / (ps.limited_wins + ps.limited_losses + ps.limited_draws) * 100
+        END, 1
       ),
       'constructed_wins', ps.constructed_wins,
       'constructed_losses', ps.constructed_losses,
       'constructed_draws', ps.constructed_draws,
       'constructed_record', ps.constructed_wins || '-' || ps.constructed_losses || '-' || ps.constructed_draws,
       'constructed_win_pct', ROUND(
-        CASE 
-          WHEN (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) = 0 THEN 0 
-          ELSE ps.constructed_wins::numeric / (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) = 0 THEN 0
+          ELSE ps.constructed_wins::numeric / (ps.constructed_wins + ps.constructed_losses + ps.constructed_draws) * 100
+        END, 1
       ),
       'day1_wins', ps.day1_wins,
       'day1_losses', ps.day1_losses,
       'day1_draws', ps.day1_draws,
       'day1_win_pct', ROUND(
-        CASE 
-          WHEN (ps.day1_wins + ps.day1_losses + ps.day1_draws) = 0 THEN 0 
-          ELSE ps.day1_wins::numeric / (ps.day1_wins + ps.day1_losses + ps.day1_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.day1_wins + ps.day1_losses + ps.day1_draws) = 0 THEN 0
+          ELSE ps.day1_wins::numeric / (ps.day1_wins + ps.day1_losses + ps.day1_draws) * 100
+        END, 1
       ),
       'day2_wins', ps.day2_wins,
       'day2_losses', ps.day2_losses,
       'day2_draws', ps.day2_draws,
       'day2_win_pct', ROUND(
-        CASE 
-          WHEN (ps.day2_wins + ps.day2_losses + ps.day2_draws) = 0 THEN 0 
-          ELSE ps.day2_wins::numeric / (ps.day2_wins + ps.day2_losses + ps.day2_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.day2_wins + ps.day2_losses + ps.day2_draws) = 0 THEN 0
+          ELSE ps.day2_wins::numeric / (ps.day2_wins + ps.day2_losses + ps.day2_draws) * 100
+        END, 1
       ),
       'day3_wins', ps.day3_wins,
       'day3_losses', ps.day3_losses,
       'day3_draws', ps.day3_draws,
       'day3_win_pct', ROUND(
-        CASE 
-          WHEN (ps.day3_wins + ps.day3_losses + ps.day3_draws) = 0 THEN 0 
-          ELSE ps.day3_wins::numeric / (ps.day3_wins + ps.day3_losses + ps.day3_draws) * 100 
-        END, 2
+        CASE
+          WHEN (ps.day3_wins + ps.day3_losses + ps.day3_draws) = 0 THEN 0
+          ELSE ps.day3_wins::numeric / (ps.day3_wins + ps.day3_losses + ps.day3_draws) * 100
+        END, 1
       ),
       'top8_record', ps.day3_wins || '-' || ps.day3_losses || '-' || ps.day3_draws,
       'drafts', ps.drafts,
       'winning_drafts', ps.winning_drafts,
       'losing_drafts', ps.losing_drafts,
       'winning_drafts_pct', ROUND(
-        CASE 
-          WHEN (ps.winning_drafts + ps.losing_drafts) = 0 THEN 0 
-          ELSE ps.winning_drafts::numeric / (ps.winning_drafts + ps.losing_drafts) * 100 
-        END, 2
+        CASE
+          WHEN (ps.winning_drafts + ps.losing_drafts) = 0 THEN 0
+          ELSE ps.winning_drafts::numeric / (ps.winning_drafts + ps.losing_drafts) * 100
+        END, 1
       ),
       'trophy_drafts', ps.trophy_drafts,
       'max_win_streak', ps.max_win_streak,
