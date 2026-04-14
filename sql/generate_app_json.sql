@@ -123,14 +123,14 @@ player_stats AS (
   GROUP BY player_id, first_name, last_name
 ),
 player_qualifications AS (
-  SELECT 
+  SELECT
     player_id,
     EXISTS(
-      SELECT 1 
-      FROM notable_qualifications nq 
-      WHERE nq.player_id = ps.player_id 
-      AND nq.event_id = 13
-    ) as ecl_qualification
+      SELECT 1
+      FROM notable_qualifications nq
+      WHERE nq.player_id = ps.player_id
+      AND nq.event_id = 14
+    ) as sos_qualification
   FROM player_stats ps
 )
 
@@ -144,7 +144,7 @@ SELECT json_build_object(
           'first_name', ps.first_name,
           'last_name', ps.last_name,
           'full_name', ps.first_name || ' ' || ps.last_name,
-          'ecl_qualification', COALESCE(pq.ecl_qualification, false)
+          'sos_qualification', COALESCE(pq.sos_qualification, false)
         ),
         'events', COALESCE((
           SELECT json_object_agg(

@@ -86,32 +86,32 @@ const SearchBar: React.FC<SearchBarProps> = ({
             )}
           </div>
 
-          {/* ECL Players Only Toggle - Conditionally rendered */}
+          {/* SOS Players Only Toggle - Conditionally rendered */}
           {showEclToggle && (
             <div
               onClick={() =>
                 handleFilterChange({
-                  EclPlayersOnly: !filters.EclPlayersOnly || undefined,
+                  SosPlayersOnly: !filters.SosPlayersOnly || undefined,
                 })
               }
               className='flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
             >
               <span className={`font-medium text-sm whitespace-nowrap ${
-                filters.EclPlayersOnly ? 'text-purple-600' : 'text-gray-700'
+                filters.SosPlayersOnly ? 'text-purple-600' : 'text-gray-700'
               }`}>
-                ECL Players
+                SOS Players
               </span>
 
               {/* Toggle Switch */}
               <div className='relative'>
                 <div
                   className={`w-11 h-6 rounded-full transition-colors ${
-                    filters.EclPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
+                    filters.SosPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
                   }`}
                 >
                   <div
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
-                      filters.EclPlayersOnly
+                      filters.SosPlayersOnly
                         ? 'translate-x-5'
                         : 'translate-x-0'
                     }`}

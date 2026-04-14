@@ -156,6 +156,10 @@ def insert_result(cur, event_id: int, player_id: int, row: Dict, dry_run: bool =
 
 def process_csv_row(cur, row: Dict, dry_run: bool = False) -> None:
     """Process a single CSV row."""
+    # Skip blank rows
+    if not row.get('Last', '').strip() and not row.get('First', '').strip():
+        return
+
     # Parse event data
     event_name = row['Event'].strip()
     event_date = parse_date(row['Event Date'].strip())

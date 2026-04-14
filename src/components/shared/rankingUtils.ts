@@ -36,8 +36,8 @@ export const applyFilters = (
       return false;
     }
 
-    // Worlds Players Only filter
-    if (filters.EclPlayersOnly && !player.data.player_info.ecl_qualification) {
+    // SOS Players Only filter
+    if (filters.SosPlayersOnly && !player.data.player_info.sos_qualification) {
       return false;
     }
 

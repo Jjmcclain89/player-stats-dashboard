@@ -90,11 +90,11 @@ export default function CurrentTournamentPage() {
   const [focusedPlayerId, setFocusedPlayerId] = useState<string | null>(null);
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
 
-  // Get all ECL qualified players as Player type
+  // Get all SOS qualified players as Player type
   const allQualifiedPlayers = useMemo(() => {
     const data = playerDataJson as unknown as PlayerDataStructure;
     return Object.entries(data.players)
-      .filter(([_, player]) => player.player_info.ecl_qualification === true)
+      .filter(([_, player]) => player.player_info.sos_qualification === true)
       .map(([id, playerData]) => ({
         id,
         fullName: playerData.player_info.full_name,
@@ -297,7 +297,7 @@ export default function CurrentTournamentPage() {
         <div className="mb-8 mx-auto">
           <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Lorwyn Eclipse - Qualified Players
+              Secrets of Strixhaven - Qualified Players
             </h1>
           </div>
 

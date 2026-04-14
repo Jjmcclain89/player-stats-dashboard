@@ -25,7 +25,7 @@ const Navigation = () => {
 
   const navLinks = [
     { href: '/', label: 'Player Stats Dashboard' },
-    { href: '/current_tournament', label: 'Lorwyn Eclipse' },
+    { href: '/current_tournament', label: 'Secrets of Strixhaven' },
   ];
 
   return (
