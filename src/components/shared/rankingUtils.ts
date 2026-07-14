@@ -36,8 +36,8 @@ export const applyFilters = (
       return false;
     }
 
-    // SOS Players Only filter
-    if (filters.SosPlayersOnly && !player.data.player_info.sos_qualification) {
+    // MSH Players Only filter
+    if (filters.MshPlayersOnly && !player.data.player_info.msh_qualification) {
       return false;
     }
 

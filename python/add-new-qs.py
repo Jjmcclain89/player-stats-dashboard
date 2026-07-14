@@ -95,8 +95,8 @@ def main():
     
     # Hardcoded values
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_file = os.path.join(script_dir, 'richmond-qs.csv')
-    event_id = 13
+    csv_file = os.path.join(script_dir, 'msh-qs.csv')
+    event_id = 15
     
     db_conn_string = sys.argv[1]
     dry_run = '--dry-run' in sys.argv

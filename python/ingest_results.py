@@ -269,8 +269,21 @@ def main():
     
     try:
         # Read and process CSV
+        fieldnames = [
+            'Last', 'First', 'Full Name', 'Event', 'Format of Event', 'Event #', 'Event Date',
+            'Day 2', 'Top 8',
+            'Limited Wins', 'Limited Loses', 'Limited Draws',
+            'Drafts', 'Positive Record', 'Losing Record', '# of Trophy', '0-3',
+            'Constructed Wins', 'Constructed Loses', 'Constructed Draws',
+            'Overall Wins', 'Overall Loses', 'Overall Draws', 'Overall Record',
+            'D1 W', 'D1 L', 'D1 D',
+            'D2 W', 'D2 L', 'D2 D',
+            'D3 W', 'D3 L', 'D3 D',
+            'In contention', 'W Streak', 'L Streak', '5 win St',
+            'Rank', 'Summary', 'Team', 'Deck', 'Notes',
+        ]
         with open(csv_file, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, fieldnames=fieldnames)
             
             rows_processed = 0
             for row in reader:

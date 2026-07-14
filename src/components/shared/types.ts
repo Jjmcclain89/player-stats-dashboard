@@ -3,7 +3,7 @@ export interface PlayerInfo {
   first_name?: string;
   last_name?: string;
   full_name: string;
-  sos_qualification?: boolean;
+  msh_qualification?: boolean;
 }
 
 export interface StatValue {
@@ -135,7 +135,7 @@ export interface FilterOptions {
   maxEvents?: number;
   minTop8s?: number;
   hasTop8?: boolean;
-  SosPlayersOnly?: boolean;
+  MshPlayersOnly?: boolean;
   formats?: string[];
   startDate?: string;
   endDate?: string;

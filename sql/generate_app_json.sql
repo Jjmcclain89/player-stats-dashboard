@@ -129,8 +129,8 @@ player_qualifications AS (
       SELECT 1
       FROM notable_qualifications nq
       WHERE nq.player_id = ps.player_id
-      AND nq.event_id = 14
-    ) as sos_qualification
+      AND nq.event_id = 15
+    ) as msh_qualification
   FROM player_stats ps
 )
 
@@ -144,7 +144,7 @@ SELECT json_build_object(
           'first_name', ps.first_name,
           'last_name', ps.last_name,
           'full_name', ps.first_name || ' ' || ps.last_name,
-          'sos_qualification', COALESCE(pq.sos_qualification, false)
+          'msh_qualification', COALESCE(pq.msh_qualification, false)
         ),
         'events', COALESCE((
           SELECT json_object_agg(
