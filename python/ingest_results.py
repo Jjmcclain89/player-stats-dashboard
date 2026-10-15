@@ -154,11 +154,11 @@ def insert_result(cur, event_id: int, player_id: int, row: Dict, dry_run: bool =
         print(f"  Inserted result for player ID {player_id} at event ID {event_id}", file=sys.stderr)
 
 
-def process_csv_row(cur, row: Dict, dry_run: bool = False) -> None:
-    """Process a single CSV row."""
+def process_csv_row(cur, row: Dict, dry_run: bool = False) -> bool:
+    """Process a single CSV row. Returns True if player was newly created."""
     # Skip blank rows
     if not row.get('Last', '').strip() and not row.get('First', '').strip():
-        return
+        return False
 
     # Parse event data
     event_name = row['Event'].strip()
@@ -174,8 +174,10 @@ def process_csv_row(cur, row: Dict, dry_run: bool = False) -> None:
     actual_event_id = get_or_create_event(cur, event_name, event_date, event_format, event_id, dry_run)
     
     # Get or create player
+    cur.execute("SELECT id FROM players WHERE first_name = %s AND last_name = %s", (first_name, last_name))
+    player_is_new = cur.fetchone() is None
     player_id = get_or_create_player(cur, first_name, last_name, dry_run)
-    
+
     # Parse result data
     result_data = {
         'day2': safe_bool(row['Day 2']),
@@ -212,11 +214,12 @@ def process_csv_row(cur, row: Dict, dry_run: bool = False) -> None:
         'summary': row['Summary'].strip(),
         'team': row['Team'].strip() if row['Team'].strip() else None,
         'deck': row['Deck'].strip(),
-        'notes': row.get('Notes', '').strip() if row.get('Notes', '').strip() else None
+        'notes': (row.get('Notes') or '').strip() or None
     }
     
     # Insert result
     insert_result(cur, actual_event_id, player_id, result_data, dry_run)
+    return player_is_new
 
 
 def main():
@@ -248,10 +251,6 @@ def main():
         limit_idx = sys.argv.index('--limit')
         if limit_idx + 1 < len(sys.argv):
             limit = int(sys.argv[limit_idx + 1])
-    
-    # Default to 1 row for dry run
-    if dry_run and limit is None:
-        limit = 1
     
     print(f"Processing CSV: {csv_file}", file=sys.stderr)
     print(f"Dry run: {dry_run}", file=sys.stderr)
@@ -286,25 +285,34 @@ def main():
             reader = csv.DictReader(f, fieldnames=fieldnames)
             
             rows_processed = 0
+            new_players = 0
+            existing_players = 0
             for row in reader:
                 rows_processed += 1
-                
+
                 print(f"\n{'='*60}", file=sys.stderr)
                 print(f"Processing row {rows_processed}: {row['First']} {row['Last']}", file=sys.stderr)
                 print(f"{'='*60}", file=sys.stderr)
-                
-                process_csv_row(cur, row, dry_run)
-                
+
+                player_is_new = process_csv_row(cur, row, dry_run)
+                if player_is_new:
+                    new_players += 1
+                else:
+                    existing_players += 1
+
                 if limit and rows_processed >= limit:
                     print(f"\nReached limit of {limit} rows", file=sys.stderr)
                     break
-        
+
         if not dry_run:
             conn.commit()
             print(f"\n✓ Successfully imported {rows_processed} result(s)", file=sys.stderr)
         else:
             print(f"\n✓ Dry run complete - processed {rows_processed} row(s)", file=sys.stderr)
             print("  (No changes were made to the database)", file=sys.stderr)
+
+        print(f"\n  Players already in DB: {existing_players}", file=sys.stderr)
+        print(f"  New players to add:    {new_players}", file=sys.stderr)
     
     except Exception as e:
         conn.rollback()

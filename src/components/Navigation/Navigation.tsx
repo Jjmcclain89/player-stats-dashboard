@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import playerDataJson from '../../data/data.json';
 import { getAllEventCodes } from '../shared/eventUtils';
@@ -13,19 +13,37 @@ const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEventsDropdownOpen, setIsEventsDropdownOpen] = useState(false);
   const [eventCodes, setEventCodes] = useState<string[]>([]);
+  const [fontSize, setFontSize] = useState(100);
+  const fontSizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const playerData = playerDataJson as unknown as PlayerDataStructure;
     const codes = getAllEventCodes(playerData);
     setEventCodes(codes);
+
+    try {
+      const savedSize = parseInt(localStorage.getItem('fontSize') || '100', 10);
+      const size = isNaN(savedSize) ? 100 : savedSize;
+      setFontSize(size);
+      if (size !== 100) (document.body.style as any).zoom = `${size}%`;
+    } catch {}
   }, []);
+
+  const handleFontSizeChange = (val: number) => {
+    setFontSize(val); // update slider position immediately
+    if (fontSizeTimer.current) clearTimeout(fontSizeTimer.current);
+    fontSizeTimer.current = setTimeout(() => {
+      try { localStorage.setItem('fontSize', String(val)); } catch {}
+      (document.body.style as any).zoom = `${val}%`;
+    }, 60);
+  };
 
   const isActive = (path: string) => pathname === path;
   const isEventPage = pathname?.startsWith('/events/');
 
   const navLinks = [
     { href: '/', label: 'Player Stats Dashboard' },
-    { href: '/current_tournament', label: 'Pro Tour MSH' },
+    { href: '/current_tournament', label: 'Player List' },
   ];
 
   return (
@@ -71,27 +89,44 @@ const Navigation = () => {
                   {/* Invisible bridge to prevent gap issues */}
                   <div className="absolute left-0 top-full w-48 h-2" />
 
-                  <div
-                    className="absolute left-0 mt-2 w-48 bg-slate-700 rounded-md shadow-lg py-1 max-h-96 overflow-y-auto z-50"
-                  >
-                  {eventCodes.map((eventCode) => (
-                    <Link
-                      key={eventCode}
-                      href={`/events/${eventCode}`}
-                      className={`block px-4 py-2 text-sm transition-colors ${
-                        pathname === `/events/${eventCode}`
-                          ? 'bg-slate-900 text-white'
-                          : 'text-slate-300 hover:bg-slate-600 hover:text-white'
-                      }`}
-                      onClick={() => setIsEventsDropdownOpen(false)}
-                    >
-                      {eventCode}
-                    </Link>
-                  ))}
-                </div>
+                  <div className="absolute left-0 mt-2 w-48 bg-slate-700 rounded-md shadow-lg py-1 max-h-96 overflow-y-auto z-50">
+                    {eventCodes.map((eventCode) => (
+                      <Link
+                        key={eventCode}
+                        href={`/events/${eventCode}`}
+                        className={`block px-4 py-2 text-sm transition-colors ${
+                          pathname === `/events/${eventCode}`
+                            ? 'bg-slate-900 text-white'
+                            : 'text-slate-300 hover:bg-slate-600 hover:text-white'
+                        }`}
+                        onClick={() => setIsEventsDropdownOpen(false)}
+                      >
+                        {eventCode}
+                      </Link>
+                    ))}
+                  </div>
                 </>
               )}
             </div>
+          </div>
+
+          {/* Desktop right-side controls */}
+          <div className="hidden md:flex md:items-center md:gap-3">
+            {/* Font size slider */}
+            <div className="flex items-center gap-1.5" title={`Text size: ${fontSize}%`}>
+              <span className="text-slate-400 text-xs select-none leading-none">A</span>
+              <input
+                type="range"
+                min={80}
+                max={160}
+                step={5}
+                value={fontSize}
+                onChange={(e) => handleFontSizeChange(parseInt(e.target.value, 10))}
+                className="w-20 cursor-pointer accent-slate-300"
+              />
+              <span className="text-slate-300 text-sm select-none leading-none">A</span>
+            </div>
+
           </div>
 
           {/* Mobile menu button */}
@@ -166,6 +201,22 @@ const Navigation = () => {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Mobile font size */}
+            <div className="flex items-center gap-2 px-3 py-2">
+              <span className="text-slate-400 text-xs select-none">A</span>
+              <input
+                type="range"
+                min={80}
+                max={160}
+                step={5}
+                value={fontSize}
+                onChange={(e) => handleFontSizeChange(parseInt(e.target.value, 10))}
+                className="w-32 accent-slate-300"
+              />
+              <span className="text-slate-300 text-sm select-none">A</span>
+              <span className="text-slate-400 text-xs">{fontSize}%</span>
             </div>
           </div>
         </div>

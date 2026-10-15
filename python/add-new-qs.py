@@ -95,8 +95,8 @@ def main():
     
     # Hardcoded values
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_file = os.path.join(script_dir, 'msh-qs.csv')
-    event_id = 15
+    csv_file = os.path.join(script_dir, 'wc32-qs.csv')
+    event_id = 16
     
     db_conn_string = sys.argv[1]
     dry_run = '--dry-run' in sys.argv
@@ -135,8 +135,8 @@ def main():
                 if len(row) < 2:
                     continue
                 
-                first_name = row[0].strip()
-                last_name = row[1].strip()
+                last_name = row[0].strip()
+                first_name = row[1].strip()
                 
                 if not first_name or not last_name:
                     continue

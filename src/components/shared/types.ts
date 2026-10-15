@@ -4,6 +4,7 @@ export interface PlayerInfo {
   last_name?: string;
   full_name: string;
   msh_qualification?: boolean;
+  [key: string]: any;
 }
 
 export interface StatValue {

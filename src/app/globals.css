@@ -25,3 +25,8 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* Full-width mode: remove max-width caps */
+html.fullscreen .max-w-screen-lg {
+  max-width: 100% !important;
+}

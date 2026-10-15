@@ -19,18 +19,20 @@ const EventsSection: React.FC<EventsSectionProps> = ({ selectedPlayer }) => {
     if (typeof window !== 'undefined') {
       const savedRichMode = localStorage.getItem('richMode');
       if (savedRichMode !== null) {
-        setRichMode(savedRichMode === 'true');
+        const val = savedRichMode === 'true';
+        setRichMode(val);
+        document.documentElement.classList.toggle('fullscreen', val);
       }
     }
   }, []);
 
-  // Save richMode preference to localStorage whenever it changes
   const handleToggleRichMode = () => {
     const newRichMode = !richMode;
     setRichMode(newRichMode);
-
     if (typeof window !== 'undefined') {
       localStorage.setItem('richMode', newRichMode.toString());
+      localStorage.setItem('fs', String(newRichMode));
+      document.documentElement.classList.toggle('fullscreen', newRichMode);
     }
   };
 

@@ -275,8 +275,8 @@ const EventsTableView: React.FC<EventsTableViewProps> = ({ events }) => {
                   <TableCell columnIndex={34} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.streak5}</TableCell>
                 </tr>
                 <tr>
-                  <td className='px-2 py-1 border-l border-b-gray-800 border-b-8 border-r force-black-text whitespace-nowrap text-xs'>Notes</td>
-                  <td colSpan={34} className='px-2 py-1 border-b-gray-800 border-b-8 border-r force-black-text whitespace-nowrap text-xs'>{event.notes || '-'}</td>
+                  <td className='px-2 py-1 border-l border-b-gray-800 border-b-8 border-r force-black-text text-xs font-medium'>Notes</td>
+                  <td colSpan={34} className='px-2 py-1 border-b-gray-800 border-b-8 border-r force-black-text text-xs whitespace-normal break-words'>{event.notes || '-'}</td>
                 </tr>
               </React.Fragment>
             ))}

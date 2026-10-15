@@ -23,16 +23,19 @@ const EventPageClient = () => {
     if (typeof window !== 'undefined') {
       const savedRichMode = localStorage.getItem('eventPageRichMode');
       if (savedRichMode !== null) {
-        setRichMode(savedRichMode === 'true');
+        const val = savedRichMode === 'true';
+        setRichMode(val);
+        document.documentElement.classList.toggle('fullscreen', val);
       }
     }
   }, []);
 
-  // Save rich mode state to localStorage when it changes
   const handleRichModeToggle = (checked: boolean) => {
     setRichMode(checked);
     if (typeof window !== 'undefined') {
       localStorage.setItem('eventPageRichMode', checked.toString());
+      localStorage.setItem('fs', String(checked));
+      document.documentElement.classList.toggle('fullscreen', checked);
     }
   };
 
