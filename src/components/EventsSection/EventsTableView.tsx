@@ -257,8 +257,8 @@ const EventsTableView: React.FC<EventsTableViewProps> = ({ events }) => {
                   <TableCell columnIndex={4} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.summary || '-'}</TableCell>
                   <TableCell columnIndex={5} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.deck || '-'}</TableCell>
                   <TableCell extraClasses={event.day2 ? 'bg-green-100' : ''} columnIndex={6} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.day2 ? '✓' : ''}</TableCell>
-                  <TableCell extraClasses={event.top8 ? 'bg-green-100' : ''} columnIndex={7} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.top8 ? '✓' : ''}</TableCell>
                   <TableCell extraClasses={event.in_contention ? 'bg-green-100' : ''} columnIndex={28} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.in_contention ? '✓' : ''}</TableCell>
+                  <TableCell extraClasses={event.top8 ? 'bg-green-100' : ''} columnIndex={7} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.top8 ? '✓' : ''}</TableCell>
                   <TableCell columnIndex={19} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.record}</TableCell>
                   <TableCell columnIndex={8} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{`${event.limited_wins}-${event.limited_losses}-${event.limited_draws}`}</TableCell>
                   <TableCell columnIndex={11} onMouseEnter={setHoveredColumn} onMouseLeave={() => setHoveredColumn(null)}>{event.num_drafts}</TableCell>
