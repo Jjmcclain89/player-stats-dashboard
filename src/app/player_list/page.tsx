@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useTransition, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { PlayerStats, PlayerDataStructure, Player, FilterOptions, AllEvent } from '@/components/shared/types';
 import { applyFilters } from '@/components/shared/rankingUtils';
@@ -57,6 +58,7 @@ const SORTED_EVENTS: AllEvent[] = Object.values(
 const ROW_HEIGHT = 45;
 
 export default function PlayerListPage() {
+  const router = useRouter();
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'events', direction: 'desc' });
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -74,6 +76,7 @@ export default function PlayerListPage() {
   const tableRef = useRef<HTMLTableElement>(null);
   const topScrollRef = useRef<HTMLDivElement>(null);
   const [tableWidth, setTableWidth] = useState(3000);
+  const [needsHScroll, setNeedsHScroll] = useState(false);
 
   const handleEventChange = (newEvent: string) => {
     setDisplayEventName(newEvent);
@@ -193,7 +196,16 @@ export default function PlayerListPage() {
 
   // Measure table width for the top phantom scrollbar
   useEffect(() => {
-    if (tableRef.current) setTableWidth(tableRef.current.scrollWidth);
+    const table = tableRef.current;
+    const container = scrollContainerRef.current;
+    if (!table || !container) return;
+    const update = () => {
+      setTableWidth(table.scrollWidth);
+      setNeedsHScroll(container.scrollWidth > container.clientWidth);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, [sortedPlayers]);
 
   // Sync horizontal scrollbars (top phantom ↔ main container)
@@ -207,6 +219,13 @@ export default function PlayerListPage() {
     main.addEventListener('scroll', syncMain);
     return () => { top.removeEventListener('scroll', syncTop); main.removeEventListener('scroll', syncMain); };
   }, []);
+
+  function handlePlayerClick(playerId: string) {
+    const player = BASE_PLAYERS.find((p) => p.id === playerId);
+    if (!player) return;
+    localStorage.setItem('selectedPlayer', JSON.stringify(player));
+    router.push('/');
+  }
 
   function handleSort(key: string) {
     setSortConfig((prev) => ({
@@ -268,11 +287,11 @@ export default function PlayerListPage() {
           />
         </div>
 
-        {/* Top phantom scrollbar */}
+        {/* Top phantom scrollbar — only visible when table overflows */}
         <div
           ref={topScrollRef}
           className="overflow-x-auto overflow-y-hidden bg-gray-100 border border-gray-300 rounded mb-1"
-          style={{ height: 16 }}
+          style={{ height: 16, display: needsHScroll ? 'block' : 'none' }}
         >
           <div style={{ width: tableWidth, height: 1 }} />
         </div>
@@ -335,8 +354,9 @@ export default function PlayerListPage() {
                       {playerRanks.get(player.playerId)}
                     </td>
                     <td
-                      className="pl-name px-3 py-2 font-medium text-gray-900 sticky z-10 border-r border-b border-gray-200 w-40"
+                      className="pl-name px-3 py-2 font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer sticky z-10 border-r border-b border-gray-200 w-40"
                       style={{ backgroundColor: bg, left: 40 }}
+                      onClick={() => handlePlayerClick(player.playerId)}
                     >
                       {player.player_info.full_name}
                     </td>
