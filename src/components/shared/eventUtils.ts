@@ -141,7 +141,7 @@ export const getEventResults = (
   };
 };
 
-// Helper function to get all unique event codes from the data
+// Helper function to get all unique event codes from the data, sorted by date descending
 export const getAllEventCodes = (playerData: PlayerDataStructure): string[] => {
   const eventCodes = new Set<string>();
 
@@ -151,5 +151,15 @@ export const getAllEventCodes = (playerData: PlayerDataStructure): string[] => {
     });
   });
 
-  return Array.from(eventCodes).sort();
+  // Build a name→date map from the top-level events list
+  const dateByName: Record<string, string> = {};
+  Object.values(playerData.events).forEach((ev) => {
+    dateByName[ev.name] = ev.date;
+  });
+
+  return Array.from(eventCodes).sort((a, b) => {
+    const da = dateByName[a] ?? '';
+    const db = dateByName[b] ?? '';
+    return db.localeCompare(da); // descending
+  });
 };

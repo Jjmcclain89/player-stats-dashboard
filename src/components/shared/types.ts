@@ -3,7 +3,7 @@ export interface PlayerInfo {
   first_name?: string;
   last_name?: string;
   full_name: string;
-  msh_qualification?: boolean;
+  wc32_qualification?: boolean;
   [key: string]: any;
 }
 
@@ -137,6 +137,8 @@ export interface FilterOptions {
   minTop8s?: number;
   hasTop8?: boolean;
   MshPlayersOnly?: boolean;
+  currentEventFilter?: boolean;
+  currentEventName?: string;
   formats?: string[];
   startDate?: string;
   endDate?: string;

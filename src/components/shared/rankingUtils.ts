@@ -36,9 +36,16 @@ export const applyFilters = (
       return false;
     }
 
-    // MSH Players Only filter
-    if (filters.MshPlayersOnly && !player.data.player_info.msh_qualification) {
-      return false;
+    // Current event filter
+    if (filters.currentEventFilter && filters.currentEventName) {
+      if (filters.currentEventName === 'WC32') {
+        if (!player.data.player_info.wc32_qualification) return false;
+      } else {
+        const played = Object.values(player.data.events).some(
+          (e) => e.event_code === filters.currentEventName
+        );
+        if (!played) return false;
+      }
     }
 
     // Format filter - check if player has played any events in the specified formats

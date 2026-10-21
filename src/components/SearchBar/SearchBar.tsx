@@ -1,5 +1,5 @@
 // SearchBar/SearchBar.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { Player, FilterOptions } from '../shared/types';
 
@@ -15,6 +15,7 @@ interface SearchBarProps {
   totalPlayers: number;
   filteredPlayerCount: number;
   showEclToggle?: boolean;
+  allEventCodes?: string[];
 }
 
 // Helper function to normalize text by removing accents - EXPORTED
@@ -37,7 +38,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
   totalPlayers,
   filteredPlayerCount,
   showEclToggle = true,
+  allEventCodes = [],
 }) => {
+  const [selectedEventName, setSelectedEventName] = useState(
+    () => allEventCodes[0] ?? ''
+  );
+
+  // Sync default when allEventCodes first loads (static JSON, so fires once)
+  useEffect(() => {
+    if (allEventCodes.length > 0 && !selectedEventName) {
+      setSelectedEventName(allEventCodes[0]);
+    }
+  }, [allEventCodes]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value);
     onShowDropdownChange(true);
@@ -86,36 +99,43 @@ const SearchBar: React.FC<SearchBarProps> = ({
             )}
           </div>
 
-          {/* MSH Players Only Toggle - Conditionally rendered */}
-          {showEclToggle && (
-            <div
-              onClick={() =>
-                handleFilterChange({
-                  MshPlayersOnly: !filters.MshPlayersOnly || undefined,
-                })
-              }
-              className='flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
-            >
-              <span className={`font-medium text-sm whitespace-nowrap ${
-                filters.MshPlayersOnly ? 'text-purple-600' : 'text-gray-700'
-              }`}>
-                MSH Players
-              </span>
+          {/* Event Filter - dropdown + toggle */}
+          {showEclToggle && allEventCodes.length > 0 && (
+            <div className='flex items-center gap-1 border border-gray-300 rounded-lg px-2 py-2 hover:bg-gray-50'>
+              {/* Event dropdown */}
+              <select
+                value={selectedEventName}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setSelectedEventName(newName);
+                  if (filters.currentEventFilter) {
+                    handleFilterChange({ currentEventFilter: true, currentEventName: newName });
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className='text-sm font-medium border-none bg-transparent cursor-pointer focus:outline-none pr-1'
+                style={{ color: filters.currentEventFilter ? '#9333ea' : '#374151' }}
+              >
+                {allEventCodes.map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
 
-              {/* Toggle Switch */}
-              <div className='relative'>
-                <div
-                  className={`w-11 h-6 rounded-full transition-colors ${
-                    filters.MshPlayersOnly ? 'bg-purple-600' : 'bg-gray-300'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${
-                      filters.MshPlayersOnly
-                        ? 'translate-x-5'
-                        : 'translate-x-0'
-                    }`}
-                  />
+              {/* Toggle */}
+              <div
+                onClick={() => {
+                  const isOn = !!filters.currentEventFilter;
+                  if (isOn) {
+                    handleFilterChange({ currentEventFilter: undefined, currentEventName: undefined });
+                  } else {
+                    const evName = selectedEventName || allEventCodes[0];
+                    handleFilterChange({ currentEventFilter: true, currentEventName: evName });
+                  }
+                }}
+                className='cursor-pointer relative ml-1'
+              >
+                <div className={`w-11 h-6 rounded-full transition-colors ${filters.currentEventFilter ? 'bg-purple-600' : 'bg-gray-300'}`}>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform bg-white ${filters.currentEventFilter ? 'translate-x-5' : 'translate-x-0'}`} />
                 </div>
               </div>
             </div>

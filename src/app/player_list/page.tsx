@@ -220,7 +220,7 @@ export default function PlayerListPage() {
   const paddingTop = virtualItems[0]?.start ?? 0;
   const paddingBottom = totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0);
 
-  const selectedEventLabel = displayEventName === 'all' ? 'All Players' : displayEventName;
+  const selectedEventLabel = displayEventName === 'all' ? 'Player List' : displayEventName;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -245,7 +245,7 @@ export default function PlayerListPage() {
                 onChange={(e) => handleEventChange(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">All Players</option>
+                <option value="all">All Events</option>
                 {SORTED_EVENTS.map((ev) => (
                   <option key={ev.id} value={ev.name}>{ev.name}</option>
                 ))}

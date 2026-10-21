@@ -43,7 +43,7 @@ const Navigation = () => {
 
   const navLinks = [
     { href: '/', label: 'Player Stats Dashboard' },
-    { href: '/current_tournament', label: 'Player List' },
+    { href: '/player_list', label: 'Player List' },
   ];
 
   return (

@@ -156,6 +156,9 @@ const PlayerStatsApp = () => {
                     onFiltersChange={handleFiltersChange}
                     totalPlayers={players.length}
                     filteredPlayerCount={filteredPlayerPool.length}
+                    allEventCodes={Object.values(playerData.events)
+                        .sort((a, b) => b.date.localeCompare(a.date))
+                        .map((ev) => ev.name)}
                 />
 
                 {/* Main Content Area - Stats Table and Top 10 Panel */}
